@@ -20,3 +20,6 @@ lil
 
 # Go workspace file
 go.work
+
+# macOS specific
+.DS_Store
