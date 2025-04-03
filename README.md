@@ -19,6 +19,14 @@ Lil is a lightweight systray app that displays your Linear issues directly in yo
 
 ## Installation
 
+### Using Homebrew (macOS)
+
+```bash
+# Install from the Homebrew tap
+brew tap pzurek/lil
+brew install lil
+```
+
 ### Using Make
 
 ```bash

@@ -12,7 +12,7 @@ VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
 # Phony targets
-.PHONY: all build run clean test tidy deps schema gen linear install fmt vet lint check help
+.PHONY: all build run clean test tidy deps schema gen linear install fmt vet lint check help release-homebrew
 
 # Default target
 all: build
@@ -35,6 +35,7 @@ help:
 	@echo "  vet       : Run go vet"
 	@echo "  lint      : Run golangci-lint"
 	@echo "  check     : Run all code quality checks"
+	@echo "  release-homebrew : Create a new release and update Homebrew formula"
 
 # Build the application
 build: deps
@@ -178,3 +179,16 @@ lint:
 .PHONY: check
 check: fmt vet lint test
 	@echo "✅ All checks passed"
+
+# --- Release for Homebrew ---
+
+.PHONY: release-homebrew
+release-homebrew:
+	@if [ -z "$(TAG)" ]; then \
+		echo "❌ Error: TAG environment variable is not set"; \
+		echo "Please set it with: make release-homebrew TAG=v0.1.0"; \
+		exit 1; \
+	fi
+	@echo "Creating release $(TAG) for Homebrew..."
+	@./scripts/release.sh $(TAG)
+	@echo "✅ Homebrew release process complete"
