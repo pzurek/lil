@@ -105,6 +105,12 @@ func main() {
 // It calls log.Fatalln if the key is not set.
 func loadConfig() {
 	log.Println("Loading configuration...")
+
+	// Log version information
+	if version != "" {
+		log.Printf("Lil version %s (built at %s)", version, buildTime)
+	}
+
 	key := os.Getenv("LINEAR_API_KEY")
 	if key == "" {
 		log.Fatalln("Error: LINEAR_API_KEY environment variable not set.")
