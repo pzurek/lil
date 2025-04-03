@@ -31,8 +31,6 @@ var (
 //go:embed assets/icon_template_36.png
 var iconData []byte
 
-var linearAPIKey string
-
 // Define a far future time for sorting items without dates
 var distantFuture = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -57,10 +55,8 @@ func applicationDidFinishLaunching(notification foundation.Notification) {
 	// Get the system status bar
 	statusBar := appkit.StatusBar_SystemStatusBar()
 
-	// Create a new status item
-	statusItem := statusBar.StatusItemWithLength(appkit.VariableStatusItemLength)
-	// statusItem is now global
-	objc.Retain(&statusItem) // Explicitly retain the global status item
+	// Create a new status item and assign to the global variable
+	statusItem = statusBar.StatusItemWithLength(appkit.VariableStatusItemLength)
 
 	// Get the status item's button
 	button := statusItem.Button()
@@ -86,11 +82,22 @@ func applicationDidFinishLaunching(notification foundation.Notification) {
 	// Create the menu
 	menu = appkit.MenuClass.New() // Assign to global menu
 
-	// Add initial "Loading..." item
-	loadingItem := appkit.MenuItemClass.New()
-	loadingItem.SetTitle("Loading issues...")
-	loadingItem.SetEnabled(false)
-	menu.AddItem(loadingItem)
+	// Attempt to load and display cached issues first
+	cachedIssues, err := loadCachedIssues()
+	if err == nil && len(cachedIssues) > 0 {
+		log.Printf("Loaded %d issues from cache.", len(cachedIssues))
+		// Update menu immediately with cached data
+		updateMenu(cachedIssues)
+	} else {
+		if err != nil && !os.IsNotExist(err) { // Log error only if it's not "file not found"
+			log.Printf("Warning: Failed to load cached issues: %v", err)
+		}
+		// Add initial "Loading..." item if cache is empty or failed to load
+		loadingItem := appkit.MenuItemClass.New()
+		loadingItem.SetTitle("Loading issues...")
+		loadingItem.SetEnabled(false)
+		menu.AddItem(loadingItem)
+	}
 
 	// Add separator
 	menu.AddItem(appkit.MenuItemClass.SeparatorItem())
@@ -350,7 +357,12 @@ func main() {
 		return
 	}
 
-	loadConfig()
+	// Log version info early
+	if version != "" {
+		log.Printf("Lil version %s (built at %s)", version, buildTime)
+	} else {
+		log.Printf("Lil development version")
+	}
 
 	// Setup and run the AppKit application manually
 	app := appkit.Application_SharedApplication()
@@ -361,23 +373,4 @@ func main() {
 	app.SetActivationPolicy(appkit.ApplicationActivationPolicyProhibited)
 	// app.ActivateIgnoringOtherApps(true) // Removed: May interfere with accessory apps
 	app.Run()
-}
-
-// loadConfig fetches the LINEAR_API_KEY from environment variables.
-func loadConfig() {
-	log.Println("Loading configuration...")
-
-	if version != "" {
-		log.Printf("Lil version %s (built at %s)", version, buildTime)
-	}
-
-	key := os.Getenv("LINEAR_API_KEY")
-
-	if key == "" {
-		log.Fatalln("Error: LINEAR_API_KEY environment variable not set.")
-	}
-
-	linearAPIKey = key
-
-	log.Println("Linear API Key loaded successfully.")
 }
