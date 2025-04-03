@@ -1,0 +1,23 @@
+schema: schema.graphql
+operations:
+  - operations.graphql
+generated: generated.go
+package: schema
+
+# Add bindings for custom scalar types
+bindings:
+  # Bind the DateTimeOrDuration scalar to Go's string type
+  DateTimeOrDuration:
+    type: string
+  # Also add DateTime binding to be safe
+  DateTime:
+    type: string
+  # Add any other custom scalar types from the schema
+  JSON:
+    type: interface{}
+  JSONObject:
+    type: interface{}
+  TimelessDate:
+    type: string
+  TimelessDateOrDuration:
+    type: string

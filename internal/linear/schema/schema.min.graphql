@@ -1,0 +1,7162 @@
+type CustomerNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer!
+  customView: CustomView
+  cycle: Cycle
+  label: IssueLabel
+  project: Project
+  initiative: Initiative
+  team: Team
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+interface NotificationSubscription {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView
+  cycle: Cycle
+  label: IssueLabel
+  project: Project
+  initiative: Initiative
+  team: Team
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+}
+
+interface Entity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+}
+
+interface Node {
+  id: ID!
+}
+
+scalar ID
+
+scalar DateTime
+
+type User implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  displayName: String!
+  email: String!
+  avatarUrl: String
+  disableReason: String
+  inviteHash: String!
+  calendarHash: String
+  description: String
+  statusEmoji: String
+  statusLabel: String
+  statusUntilAt: DateTime
+  timezone: String
+  organization: Organization!
+  lastSeen: DateTime
+  initials: String!
+  avatarBackgroundColor: String!
+  guest: Boolean!
+  app: Boolean!
+  active: Boolean!
+  issueDrafts(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueDraftConnection!
+  drafts(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): DraftConnection!
+  url: String!
+  assignedIssues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  createdIssues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  createdIssueCount: Int!
+  teams(filter: TeamFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamConnection!
+  teamMemberships(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamMembershipConnection!
+  isMe: Boolean!
+  admin: Boolean!
+}
+
+scalar String
+
+type Organization implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  urlKey: String!
+  logoUrl: String
+  periodUploadVolume: Float!
+  gitBranchFormat: String
+  gitLinkbackMessagesEnabled: Boolean!
+  gitPublicLinkbackMessagesEnabled: Boolean!
+  roadmapEnabled: Boolean!
+  projectUpdateReminderFrequencyInWeeks: Float
+  projectUpdateRemindersDay: Day!
+  projectUpdateRemindersHour: Float!
+  initiativeUpdateReminderFrequencyInWeeks: Float
+  initiativeUpdateRemindersDay: Day!
+  initiativeUpdateRemindersHour: Float!
+  fiscalYearStartMonth: Float!
+  workingDays: [Float!]!
+  samlEnabled: Boolean!
+  samlSettings: JSONObject
+  scimEnabled: Boolean!
+  scimSettings: JSONObject
+  allowedAuthServices: [String!]!
+  ipRestrictions: [OrganizationIpRestriction!]
+  deletionRequestedAt: DateTime
+  trialEndsAt: DateTime
+  previousUrlKeys: [String!]!
+  allowMembersToInvite: Boolean
+  restrictTeamCreationToAdmins: Boolean
+  themeSettings: JSONObject
+  releaseChannel: ReleaseChannel!
+  customersConfiguration: JSONObject!
+  defaultFeedSummarySchedule: FeedSummarySchedule
+  feedEnabled: Boolean!
+  slaDayCount: SLADayCountType!
+  projectUpdatesReminderFrequency: ProjectUpdateReminderFrequency!
+  users(includeDisabled: Boolean, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): UserConnection!
+  teams(filter: TeamFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamConnection!
+  projectStatuses: [ProjectStatus!]!
+  integrations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IntegrationConnection!
+  subscription: PaidSubscription
+  userCount: Int!
+  createdIssueCount: Int!
+  templates(filter: NullableTemplateFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TemplateConnection!
+  labels(filter: IssueLabelFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueLabelConnection!
+  customerCount: Int!
+  customersEnabled: Boolean!
+}
+
+scalar Float
+
+scalar Boolean
+
+enum Day {
+  Sunday
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+}
+
+scalar JSONObject
+
+type OrganizationIpRestriction {
+  range: String!
+  type: String!
+  description: String
+  enabled: Boolean!
+}
+
+enum ReleaseChannel {
+  development
+  internal
+  beta
+  preRelease
+  public
+}
+
+enum FeedSummarySchedule {
+  daily
+  weekly
+  never
+}
+
+enum SLADayCountType {
+  all
+  onlyBusinessDays
+}
+
+enum ProjectUpdateReminderFrequency {
+  week
+  twoWeeks
+  month
+  never
+}
+
+type UserConnection {
+  edges: [UserEdge!]!
+  nodes: [User!]!
+  pageInfo: PageInfo!
+}
+
+type UserEdge {
+  node: User!
+  cursor: String!
+}
+
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+scalar Int
+
+enum PaginationOrderBy {
+  createdAt
+  updatedAt
+}
+
+type TeamConnection {
+  edges: [TeamEdge!]!
+  nodes: [Team!]!
+  pageInfo: PageInfo!
+}
+
+type TeamEdge {
+  node: Team!
+  cursor: String!
+}
+
+type Team implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  key: String!
+  description: String
+  icon: String
+  color: String
+  organization: Organization!
+  parent: Team
+  children: [Team!]!
+  cyclesEnabled: Boolean!
+  cycleStartDay: Float!
+  cycleDuration: Float!
+  cycleCooldownTime: Float!
+  cycleIssueAutoAssignStarted: Boolean!
+  cycleIssueAutoAssignCompleted: Boolean!
+  cycleLockToActive: Boolean!
+  upcomingCycleCount: Float!
+  timezone: String!
+  inviteHash: String!
+  inheritWorkflowStatuses: Boolean!
+  inheritIssueEstimation: Boolean!
+  issueEstimationType: String!
+  issueOrderingNoPriorityFirst: Boolean!
+  issueEstimationAllowZero: Boolean!
+  setIssueSortOrderOnStateChange: String!
+  issueEstimationExtended: Boolean!
+  defaultIssueEstimate: Float!
+  triageEnabled: Boolean!
+  requirePriorityToLeaveTriage: Boolean!
+  defaultIssueState: WorkflowState
+  defaultTemplateForMembers: Template
+  defaultTemplateForMembersId: String
+  defaultTemplateForNonMembers: Template
+  defaultTemplateForNonMembersId: String
+  defaultProjectTemplate: Template
+  triageIssueState: WorkflowState
+  private: Boolean!
+  facets: [Facet!]!
+  posts: [Post!]!
+  scimManaged: Boolean!
+  scimGroupName: String
+  progressHistory: JSONObject!
+  currentProgress: JSONObject!
+  draftWorkflowState: WorkflowState
+  startWorkflowState: WorkflowState
+  reviewWorkflowState: WorkflowState
+  mergeableWorkflowState: WorkflowState
+  mergeWorkflowState: WorkflowState
+  groupIssueHistory: Boolean!
+  slackNewIssue: Boolean!
+  slackIssueComments: Boolean!
+  slackIssueStatuses: Boolean!
+  autoClosePeriod: Float
+  autoCloseStateId: String
+  autoArchivePeriod: Float!
+  autoCloseParentIssues: Boolean
+  autoCloseChildIssues: Boolean
+  markedAsDuplicateWorkflowState: WorkflowState
+  joinByDefault: Boolean
+  cycleCalenderUrl: String!
+  displayName: String!
+  issues(includeSubTeams: Boolean = false, filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  issueCount(includeArchived: Boolean = false): Int!
+  cycles(filter: CycleFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CycleConnection!
+  activeCycle: Cycle
+  triageResponsibility: TriageResponsibility
+  members(filter: UserFilter, includeDisabled: Boolean, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): UserConnection!
+  membership(userId: String!): TeamMembership
+  memberships(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamMembershipConnection!
+  projects(includeSubTeams: Boolean = false, filter: ProjectFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectConnection!
+  states(filter: WorkflowStateFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): WorkflowStateConnection!
+  gitAutomationStates(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): GitAutomationStateConnection!
+  templates(filter: NullableTemplateFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TemplateConnection!
+  labels(filter: IssueLabelFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueLabelConnection!
+  webhooks(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): WebhookConnection!
+  integrationsSettings: IntegrationsSettings
+  issueSortOrderDefaultToBottom: Boolean!
+}
+
+type WorkflowState implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  color: String!
+  description: String
+  position: Float!
+  type: String!
+  team: Team!
+  inheritedFrom: WorkflowState
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+}
+
+type IssueConnection {
+  edges: [IssueEdge!]!
+  nodes: [Issue!]!
+  pageInfo: PageInfo!
+}
+
+type IssueEdge {
+  node: Issue!
+  cursor: String!
+}
+
+type Issue implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  number: Float!
+  title: String!
+  priority: Float!
+  estimate: Float
+  boardOrder: Float!
+  sortOrder: Float!
+  prioritySortOrder: Float!
+  startedAt: DateTime
+  completedAt: DateTime
+  startedTriageAt: DateTime
+  triagedAt: DateTime
+  canceledAt: DateTime
+  autoClosedAt: DateTime
+  autoArchivedAt: DateTime
+  dueDate: TimelessDate
+  slaStartedAt: DateTime
+  slaMediumRiskAt: DateTime
+  slaHighRiskAt: DateTime
+  slaBreachesAt: DateTime
+  slaType: String
+  addedToProjectAt: DateTime
+  addedToCycleAt: DateTime
+  addedToTeamAt: DateTime
+  trashed: Boolean
+  snoozedUntilAt: DateTime
+  activitySummary: JSONObject
+  documentContent: DocumentContent
+  labelIds: [String!]!
+  team: Team!
+  cycle: Cycle
+  project: Project
+  projectMilestone: ProjectMilestone
+  lastAppliedTemplate: Template
+  recurringIssueTemplate: Template
+  previousIdentifiers: [String!]!
+  creator: User
+  externalUserCreator: ExternalUser
+  assignee: User
+  snoozedBy: User
+  state: WorkflowState!
+  subIssueSortOrder: Float
+  reactionData: JSONObject!
+  priorityLabel: String!
+  sourceComment: Comment
+  integrationSourceType: IntegrationService
+  botActor: ActorBot
+  favorite: Favorite
+  identifier: String!
+  url: String!
+  branchName: String!
+  customerTicketCount: Int!
+  subscribers(filter: UserFilter, includeDisabled: Boolean, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): UserConnection!
+  parent: Issue
+  children(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  history(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueHistoryConnection!
+  labels(filter: IssueLabelFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueLabelConnection!
+  relations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueRelationConnection!
+  inverseRelations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueRelationConnection!
+  attachments(filter: AttachmentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): AttachmentConnection!
+  description: String
+  descriptionState: String
+  reactions: [Reaction!]!
+  needs(filter: CustomerNeedFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CustomerNeedConnection!
+}
+
+scalar TimelessDate
+
+type DocumentContent implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  content: String
+  contentState: String
+  issue: Issue
+  project: Project
+  initiative: Initiative
+  projectMilestone: ProjectMilestone
+  document: Document
+  meeting: Meeting
+  restoredAt: DateTime
+}
+
+type Project implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  updateReminderFrequencyInWeeks: Float
+  updateReminderFrequency: Float
+  frequencyResolution: FrequencyResolutionType!
+  updateRemindersDay: Day
+  updateRemindersHour: Float
+  name: String!
+  description: String!
+  documentContent: DocumentContent
+  slugId: String!
+  icon: String
+  color: String!
+  status: ProjectStatus!
+  creator: User
+  lead: User
+  projectUpdateRemindersPausedUntilAt: DateTime
+  startDate: TimelessDate
+  startDateResolution: DateResolutionType
+  targetDate: TimelessDate
+  targetDateResolution: DateResolutionType
+  startedAt: DateTime
+  completedAt: DateTime
+  canceledAt: DateTime
+  autoArchivedAt: DateTime
+  trashed: Boolean
+  sortOrder: Float!
+  prioritySortOrder: Float!
+  convertedFromIssue: Issue
+  lastAppliedTemplate: Template
+  priority: Int!
+  lastUpdate: ProjectUpdate
+  health: ProjectUpdateHealthType
+  healthUpdatedAt: DateTime
+  issueCountHistory: [Float!]!
+  completedIssueCountHistory: [Float!]!
+  scopeHistory: [Float!]!
+  completedScopeHistory: [Float!]!
+  inProgressScopeHistory: [Float!]!
+  progressHistory: JSONObject!
+  currentProgress: JSONObject!
+  slackNewIssue: Boolean!
+  slackIssueComments: Boolean!
+  slackIssueStatuses: Boolean!
+  labelIds: [String!]!
+  favorite: Favorite
+  url: String!
+  initiatives(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): InitiativeConnection!
+  teams(filter: TeamFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamConnection!
+  members(filter: UserFilter, includeDisabled: Boolean, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): UserConnection!
+  projectUpdates(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectUpdateConnection!
+  documents(filter: DocumentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): DocumentConnection!
+  projectMilestones(filter: ProjectMilestoneFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectMilestoneConnection!
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  externalLinks(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): EntityExternalLinkConnection!
+  history(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectHistoryConnection!
+  progress: Float!
+  scope: Float!
+  integrationsSettings: IntegrationsSettings
+  content: String
+  contentState: String
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  relations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectRelationConnection!
+  inverseRelations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectRelationConnection!
+  state: String!
+  priorityLabel: String!
+}
+
+enum FrequencyResolutionType {
+  daily
+  weekly
+}
+
+type ProjectStatus implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  color: String!
+  description: String
+  position: Float!
+  type: ProjectStatusType!
+  indefinite: Boolean!
+}
+
+enum ProjectStatusType {
+  backlog
+  planned
+  started
+  paused
+  completed
+  canceled
+}
+
+enum DateResolutionType {
+  month
+  quarter
+  halfYear
+  year
+}
+
+type Template implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  name: String!
+  description: String
+  templateData: JSON!
+  sortOrder: Float!
+  organization: Organization!
+  team: Team
+  creator: User
+  lastUpdatedBy: User
+  inheritedFrom: Template
+}
+
+scalar JSON
+
+type ProjectUpdate implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  body: String!
+  editedAt: DateTime
+  reactionData: JSONObject!
+  bodyData: String!
+  slugId: String!
+  project: Project!
+  health: ProjectUpdateHealthType!
+  user: User!
+  infoSnapshot: JSONObject
+  isDiffHidden: Boolean!
+  url: String!
+  isStale: Boolean!
+  diff: JSONObject
+  diffMarkdown: String
+  reactions: [Reaction!]!
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+}
+
+enum ProjectUpdateHealthType {
+  onTrack
+  atRisk
+  offTrack
+}
+
+type Reaction implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  emoji: String!
+  issue: Issue
+  comment: Comment
+  projectUpdate: ProjectUpdate
+  initiativeUpdate: InitiativeUpdate
+  post: Post
+  user: User
+  externalUser: ExternalUser
+}
+
+type Comment implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  body: String!
+  issue: Issue
+  documentContent: DocumentContent
+  projectUpdate: ProjectUpdate
+  initiativeUpdate: InitiativeUpdate
+  post: Post
+  parent: Comment
+  resolvingUser: User
+  resolvedAt: DateTime
+  resolvingComment: Comment
+  user: User
+  externalUser: ExternalUser
+  editedAt: DateTime
+  bodyData: String!
+  quotedText: String
+  summaryText: String
+  reactionData: JSONObject!
+  url: String!
+  children(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  botActor: ActorBot
+  externalThread: SyncedExternalThread
+  reactions: [Reaction!]!
+}
+
+type InitiativeUpdate implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  body: String!
+  editedAt: DateTime
+  reactionData: JSONObject!
+  bodyData: String!
+  slugId: String!
+  initiative: Initiative!
+  user: User!
+  health: InitiativeUpdateHealthType!
+  infoSnapshot: JSONObject
+  isDiffHidden: Boolean!
+  url: String!
+  isStale: Boolean!
+  diff: JSONObject
+  diffMarkdown: String
+  reactions: [Reaction!]!
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+}
+
+type Initiative implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  updateReminderFrequencyInWeeks: Float
+  updateReminderFrequency: Float
+  frequencyResolution: FrequencyResolutionType!
+  updateRemindersDay: Day
+  updateRemindersHour: Float
+  name: String!
+  description: String
+  organization: Organization!
+  creator: User
+  owner: User
+  slugId: String!
+  sortOrder: Float!
+  color: String
+  icon: String
+  trashed: Boolean
+  targetDate: TimelessDate
+  targetDateResolution: DateResolutionType
+  status: InitiativeStatus!
+  lastUpdate: InitiativeUpdate
+  health: InitiativeUpdateHealthType
+  healthUpdatedAt: DateTime
+  startedAt: DateTime
+  completedAt: DateTime
+  url: String!
+  projects(filter: ProjectFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectConnection!
+  links(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): EntityExternalLinkConnection!
+  integrationsSettings: IntegrationsSettings
+  history(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): InitiativeHistoryConnection!
+  content: String
+}
+
+enum InitiativeStatus {
+  Planned
+  Active
+  Completed
+}
+
+enum InitiativeUpdateHealthType {
+  onTrack
+  atRisk
+  offTrack
+}
+
+type ProjectConnection {
+  edges: [ProjectEdge!]!
+  nodes: [Project!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectEdge {
+  node: Project!
+  cursor: String!
+}
+
+input ProjectFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slugId: StringComparator
+  state: StringComparator
+  status: ProjectStatusFilter
+  priority: NullableNumberComparator
+  searchableContent: ContentComparator
+  completedAt: NullableDateComparator
+  canceledAt: NullableDateComparator
+  startDate: NullableDateComparator
+  targetDate: NullableDateComparator
+  health: StringComparator
+  healthWithAge: StringComparator
+  hasRelatedRelations: RelationExistsComparator
+  hasDependedOnByRelations: RelationExistsComparator
+  hasDependsOnRelations: RelationExistsComparator
+  hasBlockedByRelations: RelationExistsComparator
+  hasBlockingRelations: RelationExistsComparator
+  hasViolatedRelations: RelationExistsComparator
+  projectUpdates: ProjectUpdatesCollectionFilter
+  creator: UserFilter
+  lead: NullableUserFilter
+  members: UserCollectionFilter
+  issues: IssueCollectionFilter
+  roadmaps: RoadmapCollectionFilter
+  initiatives: InitiativeCollectionFilter
+  projectMilestones: ProjectMilestoneCollectionFilter
+  completedProjectMilestones: ProjectMilestoneCollectionFilter
+  nextProjectMilestone: ProjectMilestoneFilter
+  accessibleTeams: TeamCollectionFilter
+  lastAppliedTemplate: NullableTemplateFilter
+  needs: CustomerNeedCollectionFilter
+  customerCount: NumberComparator
+  and: [ProjectFilter!]
+  or: [ProjectFilter!]
+}
+
+input IDComparator {
+  eq: ID
+  neq: ID
+  in: [ID!]
+  nin: [ID!]
+}
+
+input DateComparator {
+  eq: DateTimeOrDuration
+  neq: DateTimeOrDuration
+  in: [DateTimeOrDuration!]
+  nin: [DateTimeOrDuration!]
+  lt: DateTimeOrDuration
+  lte: DateTimeOrDuration
+  gt: DateTimeOrDuration
+  gte: DateTimeOrDuration
+}
+
+scalar DateTimeOrDuration
+
+input StringComparator {
+  eq: String
+  neq: String
+  in: [String!]
+  nin: [String!]
+  eqIgnoreCase: String
+  neqIgnoreCase: String
+  startsWith: String
+  startsWithIgnoreCase: String
+  notStartsWith: String
+  endsWith: String
+  notEndsWith: String
+  contains: String
+  containsIgnoreCase: String
+  notContains: String
+  notContainsIgnoreCase: String
+  containsIgnoreCaseAndAccent: String
+}
+
+input ProjectStatusFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  description: StringComparator
+  position: NumberComparator
+  type: StringComparator
+  projects: ProjectCollectionFilter
+  and: [ProjectStatusFilter!]
+  or: [ProjectStatusFilter!]
+}
+
+input NumberComparator {
+  eq: Float
+  neq: Float
+  in: [Float!]
+  nin: [Float!]
+  lt: Float
+  lte: Float
+  gt: Float
+  gte: Float
+}
+
+input ProjectCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slugId: StringComparator
+  state: StringComparator
+  status: ProjectStatusFilter
+  priority: NullableNumberComparator
+  searchableContent: ContentComparator
+  completedAt: NullableDateComparator
+  canceledAt: NullableDateComparator
+  startDate: NullableDateComparator
+  targetDate: NullableDateComparator
+  health: StringComparator
+  healthWithAge: StringComparator
+  hasRelatedRelations: RelationExistsComparator
+  hasDependedOnByRelations: RelationExistsComparator
+  hasDependsOnRelations: RelationExistsComparator
+  hasBlockedByRelations: RelationExistsComparator
+  hasBlockingRelations: RelationExistsComparator
+  hasViolatedRelations: RelationExistsComparator
+  projectUpdates: ProjectUpdatesCollectionFilter
+  creator: UserFilter
+  lead: NullableUserFilter
+  members: UserCollectionFilter
+  issues: IssueCollectionFilter
+  roadmaps: RoadmapCollectionFilter
+  initiatives: InitiativeCollectionFilter
+  projectMilestones: ProjectMilestoneCollectionFilter
+  completedProjectMilestones: ProjectMilestoneCollectionFilter
+  nextProjectMilestone: ProjectMilestoneFilter
+  accessibleTeams: TeamCollectionFilter
+  lastAppliedTemplate: NullableTemplateFilter
+  needs: CustomerNeedCollectionFilter
+  customerCount: NumberComparator
+  and: [ProjectCollectionFilter!]
+  or: [ProjectCollectionFilter!]
+  some: ProjectFilter
+  every: ProjectFilter
+  length: NumberComparator
+}
+
+input NullableNumberComparator {
+  eq: Float
+  neq: Float
+  in: [Float!]
+  nin: [Float!]
+  null: Boolean
+  lt: Float
+  lte: Float
+  gt: Float
+  gte: Float
+}
+
+input ContentComparator {
+  contains: String
+  notContains: String
+}
+
+input NullableDateComparator {
+  eq: DateTimeOrDuration
+  neq: DateTimeOrDuration
+  in: [DateTimeOrDuration!]
+  nin: [DateTimeOrDuration!]
+  null: Boolean
+  lt: DateTimeOrDuration
+  lte: DateTimeOrDuration
+  gt: DateTimeOrDuration
+  gte: DateTimeOrDuration
+}
+
+input RelationExistsComparator {
+  eq: Boolean
+  neq: Boolean
+}
+
+input ProjectUpdatesCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  health: StringComparator
+  and: [ProjectUpdatesCollectionFilter!]
+  or: [ProjectUpdatesCollectionFilter!]
+  some: ProjectUpdatesFilter
+  every: ProjectUpdatesFilter
+  length: NumberComparator
+}
+
+input ProjectUpdatesFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  health: StringComparator
+  and: [ProjectUpdatesFilter!]
+  or: [ProjectUpdatesFilter!]
+}
+
+input UserFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  displayName: StringComparator
+  email: StringComparator
+  active: BooleanComparator
+  assignedIssues: IssueCollectionFilter
+  admin: BooleanComparator
+  invited: BooleanComparator
+  app: BooleanComparator
+  isMe: BooleanComparator
+  and: [UserFilter!]
+  or: [UserFilter!]
+}
+
+input BooleanComparator {
+  eq: Boolean
+  neq: Boolean
+}
+
+input IssueCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  number: NumberComparator
+  title: StringComparator
+  description: NullableStringComparator
+  priority: NullableNumberComparator
+  estimate: EstimateComparator
+  startedAt: NullableDateComparator
+  triagedAt: NullableDateComparator
+  completedAt: NullableDateComparator
+  canceledAt: NullableDateComparator
+  archivedAt: NullableDateComparator
+  autoClosedAt: NullableDateComparator
+  autoArchivedAt: NullableDateComparator
+  addedToCycleAt: NullableDateComparator
+  addedToCyclePeriod: CyclePeriodComparator
+  dueDate: NullableTimelessDateComparator
+  snoozedUntilAt: NullableDateComparator
+  assignee: NullableUserFilter
+  lastAppliedTemplate: NullableTemplateFilter
+  recurringIssueTemplate: NullableTemplateFilter
+  sourceMetadata: SourceMetadataComparator
+  creator: NullableUserFilter
+  parent: NullableIssueFilter
+  snoozedBy: NullableUserFilter
+  labels: IssueLabelCollectionFilter
+  subscribers: UserCollectionFilter
+  team: TeamFilter
+  projectMilestone: NullableProjectMilestoneFilter
+  comments: CommentCollectionFilter
+  cycle: NullableCycleFilter
+  project: NullableProjectFilter
+  state: WorkflowStateFilter
+  children: IssueCollectionFilter
+  attachments: AttachmentCollectionFilter
+  searchableContent: ContentComparator
+  hasRelatedRelations: RelationExistsComparator
+  hasDuplicateRelations: RelationExistsComparator
+  hasBlockedByRelations: RelationExistsComparator
+  hasBlockingRelations: RelationExistsComparator
+  slaStatus: SlaStatusComparator
+  reactions: ReactionCollectionFilter
+  needs: CustomerNeedCollectionFilter
+  customerCount: NumberComparator
+  and: [IssueCollectionFilter!]
+  or: [IssueCollectionFilter!]
+  some: IssueFilter
+  every: IssueFilter
+  length: NumberComparator
+}
+
+input NullableStringComparator {
+  eq: String
+  neq: String
+  in: [String!]
+  nin: [String!]
+  null: Boolean
+  eqIgnoreCase: String
+  neqIgnoreCase: String
+  startsWith: String
+  startsWithIgnoreCase: String
+  notStartsWith: String
+  endsWith: String
+  notEndsWith: String
+  contains: String
+  containsIgnoreCase: String
+  notContains: String
+  notContainsIgnoreCase: String
+  containsIgnoreCaseAndAccent: String
+}
+
+input EstimateComparator {
+  eq: Float
+  neq: Float
+  in: [Float!]
+  nin: [Float!]
+  null: Boolean
+  lt: Float
+  lte: Float
+  gt: Float
+  gte: Float
+  or: [NullableNumberComparator!]
+  and: [NullableNumberComparator!]
+}
+
+input CyclePeriodComparator {
+  eq: CyclePeriod
+  neq: CyclePeriod
+  in: [CyclePeriod!]
+  nin: [CyclePeriod!]
+  null: Boolean
+}
+
+enum CyclePeriod {
+  before
+  during
+  after
+}
+
+input NullableTimelessDateComparator {
+  eq: TimelessDateOrDuration
+  neq: TimelessDateOrDuration
+  in: [TimelessDateOrDuration!]
+  nin: [TimelessDateOrDuration!]
+  null: Boolean
+  lt: TimelessDateOrDuration
+  lte: TimelessDateOrDuration
+  gt: TimelessDateOrDuration
+  gte: TimelessDateOrDuration
+}
+
+scalar TimelessDateOrDuration
+
+input NullableUserFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  displayName: StringComparator
+  email: StringComparator
+  active: BooleanComparator
+  assignedIssues: IssueCollectionFilter
+  admin: BooleanComparator
+  invited: BooleanComparator
+  app: BooleanComparator
+  isMe: BooleanComparator
+  null: Boolean
+  and: [NullableUserFilter!]
+  or: [NullableUserFilter!]
+}
+
+input NullableTemplateFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  type: StringComparator
+  null: Boolean
+  and: [NullableTemplateFilter!]
+  or: [NullableTemplateFilter!]
+}
+
+input SourceMetadataComparator {
+  eq: String
+  neq: String
+  in: [String!]
+  nin: [String!]
+  null: Boolean
+  subType: SubTypeComparator
+}
+
+input SubTypeComparator {
+  eq: String
+  neq: String
+  in: [String!]
+  nin: [String!]
+  null: Boolean
+}
+
+input NullableIssueFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  number: NumberComparator
+  title: StringComparator
+  description: NullableStringComparator
+  priority: NullableNumberComparator
+  estimate: EstimateComparator
+  startedAt: NullableDateComparator
+  triagedAt: NullableDateComparator
+  completedAt: NullableDateComparator
+  canceledAt: NullableDateComparator
+  archivedAt: NullableDateComparator
+  autoClosedAt: NullableDateComparator
+  autoArchivedAt: NullableDateComparator
+  addedToCycleAt: NullableDateComparator
+  addedToCyclePeriod: CyclePeriodComparator
+  dueDate: NullableTimelessDateComparator
+  snoozedUntilAt: NullableDateComparator
+  assignee: NullableUserFilter
+  lastAppliedTemplate: NullableTemplateFilter
+  recurringIssueTemplate: NullableTemplateFilter
+  sourceMetadata: SourceMetadataComparator
+  creator: NullableUserFilter
+  parent: NullableIssueFilter
+  snoozedBy: NullableUserFilter
+  labels: IssueLabelCollectionFilter
+  subscribers: UserCollectionFilter
+  team: TeamFilter
+  projectMilestone: NullableProjectMilestoneFilter
+  comments: CommentCollectionFilter
+  cycle: NullableCycleFilter
+  project: NullableProjectFilter
+  state: WorkflowStateFilter
+  children: IssueCollectionFilter
+  attachments: AttachmentCollectionFilter
+  searchableContent: ContentComparator
+  hasRelatedRelations: RelationExistsComparator
+  hasDuplicateRelations: RelationExistsComparator
+  hasBlockedByRelations: RelationExistsComparator
+  hasBlockingRelations: RelationExistsComparator
+  slaStatus: SlaStatusComparator
+  reactions: ReactionCollectionFilter
+  needs: CustomerNeedCollectionFilter
+  customerCount: NumberComparator
+  null: Boolean
+  and: [NullableIssueFilter!]
+  or: [NullableIssueFilter!]
+}
+
+input IssueLabelCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  creator: NullableUserFilter
+  team: NullableTeamFilter
+  parent: IssueLabelFilter
+  and: [IssueLabelCollectionFilter!]
+  or: [IssueLabelCollectionFilter!]
+  some: IssueLabelFilter
+  every: IssueLabelFilter
+  length: NumberComparator
+}
+
+input NullableTeamFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  key: StringComparator
+  description: NullableStringComparator
+  issues: IssueCollectionFilter
+  parent: NullableTeamFilter
+  null: Boolean
+  and: [NullableTeamFilter!]
+  or: [NullableTeamFilter!]
+}
+
+input IssueLabelFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  creator: NullableUserFilter
+  team: NullableTeamFilter
+  parent: IssueLabelFilter
+  and: [IssueLabelFilter!]
+  or: [IssueLabelFilter!]
+}
+
+input UserCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  displayName: StringComparator
+  email: StringComparator
+  active: BooleanComparator
+  assignedIssues: IssueCollectionFilter
+  admin: BooleanComparator
+  invited: BooleanComparator
+  app: BooleanComparator
+  isMe: BooleanComparator
+  and: [UserCollectionFilter!]
+  or: [UserCollectionFilter!]
+  some: UserFilter
+  every: UserFilter
+  length: NumberComparator
+}
+
+input TeamFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  key: StringComparator
+  description: NullableStringComparator
+  issues: IssueCollectionFilter
+  parent: NullableTeamFilter
+  and: [TeamFilter!]
+  or: [TeamFilter!]
+}
+
+input NullableProjectMilestoneFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: NullableStringComparator
+  targetDate: NullableDateComparator
+  null: Boolean
+  and: [NullableProjectMilestoneFilter!]
+  or: [NullableProjectMilestoneFilter!]
+}
+
+input CommentCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  body: StringComparator
+  user: UserFilter
+  issue: NullableIssueFilter
+  projectUpdate: NullableProjectUpdateFilter
+  parent: NullableCommentFilter
+  documentContent: NullableDocumentContentFilter
+  reactions: ReactionCollectionFilter
+  needs: CustomerNeedCollectionFilter
+  and: [CommentCollectionFilter!]
+  or: [CommentCollectionFilter!]
+  some: CommentFilter
+  every: CommentFilter
+  length: NumberComparator
+}
+
+input NullableProjectUpdateFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  user: UserFilter
+  project: ProjectFilter
+  reactions: ReactionCollectionFilter
+  null: Boolean
+  and: [NullableProjectUpdateFilter!]
+  or: [NullableProjectUpdateFilter!]
+}
+
+input ReactionCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  emoji: StringComparator
+  customEmojiId: IDComparator
+  and: [ReactionCollectionFilter!]
+  or: [ReactionCollectionFilter!]
+  some: ReactionFilter
+  every: ReactionFilter
+  length: NumberComparator
+}
+
+input ReactionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  emoji: StringComparator
+  customEmojiId: IDComparator
+  and: [ReactionFilter!]
+  or: [ReactionFilter!]
+}
+
+input NullableCommentFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  body: StringComparator
+  user: UserFilter
+  issue: NullableIssueFilter
+  projectUpdate: NullableProjectUpdateFilter
+  parent: NullableCommentFilter
+  documentContent: NullableDocumentContentFilter
+  reactions: ReactionCollectionFilter
+  needs: CustomerNeedCollectionFilter
+  null: Boolean
+  and: [NullableCommentFilter!]
+  or: [NullableCommentFilter!]
+}
+
+input NullableDocumentContentFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  project: ProjectFilter
+  document: DocumentFilter
+  null: Boolean
+  and: [NullableDocumentContentFilter!]
+  or: [NullableDocumentContentFilter!]
+}
+
+input DocumentFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  title: StringComparator
+  slugId: StringComparator
+  creator: UserFilter
+  project: ProjectFilter
+  initiative: InitiativeFilter
+  and: [DocumentFilter!]
+  or: [DocumentFilter!]
+}
+
+input InitiativeFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slugId: StringComparator
+  status: StringComparator
+  creator: UserFilter
+  health: StringComparator
+  healthWithAge: StringComparator
+  and: [InitiativeFilter!]
+  or: [InitiativeFilter!]
+}
+
+input CustomerNeedCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  priority: NumberComparator
+  project: NullableProjectFilter
+  issue: NullableIssueFilter
+  comment: NullableCommentFilter
+  customer: NullableCustomerFilter
+  and: [CustomerNeedCollectionFilter!]
+  or: [CustomerNeedCollectionFilter!]
+  some: CustomerNeedFilter
+  every: CustomerNeedFilter
+  length: NumberComparator
+}
+
+input NullableProjectFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slugId: StringComparator
+  state: StringComparator
+  status: ProjectStatusFilter
+  priority: NullableNumberComparator
+  searchableContent: ContentComparator
+  completedAt: NullableDateComparator
+  canceledAt: NullableDateComparator
+  startDate: NullableDateComparator
+  targetDate: NullableDateComparator
+  health: StringComparator
+  healthWithAge: StringComparator
+  hasRelatedRelations: RelationExistsComparator
+  hasDependedOnByRelations: RelationExistsComparator
+  hasDependsOnRelations: RelationExistsComparator
+  hasBlockedByRelations: RelationExistsComparator
+  hasBlockingRelations: RelationExistsComparator
+  hasViolatedRelations: RelationExistsComparator
+  projectUpdates: ProjectUpdatesCollectionFilter
+  creator: UserFilter
+  lead: NullableUserFilter
+  members: UserCollectionFilter
+  issues: IssueCollectionFilter
+  roadmaps: RoadmapCollectionFilter
+  initiatives: InitiativeCollectionFilter
+  projectMilestones: ProjectMilestoneCollectionFilter
+  completedProjectMilestones: ProjectMilestoneCollectionFilter
+  nextProjectMilestone: ProjectMilestoneFilter
+  accessibleTeams: TeamCollectionFilter
+  lastAppliedTemplate: NullableTemplateFilter
+  needs: CustomerNeedCollectionFilter
+  customerCount: NumberComparator
+  null: Boolean
+  and: [NullableProjectFilter!]
+  or: [NullableProjectFilter!]
+}
+
+input RoadmapCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slugId: StringComparator
+  creator: UserFilter
+  and: [RoadmapCollectionFilter!]
+  or: [RoadmapCollectionFilter!]
+  some: RoadmapFilter
+  every: RoadmapFilter
+  length: NumberComparator
+}
+
+input RoadmapFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slugId: StringComparator
+  creator: UserFilter
+  and: [RoadmapFilter!]
+  or: [RoadmapFilter!]
+}
+
+input InitiativeCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slugId: StringComparator
+  status: StringComparator
+  creator: UserFilter
+  health: StringComparator
+  healthWithAge: StringComparator
+  and: [InitiativeCollectionFilter!]
+  or: [InitiativeCollectionFilter!]
+  some: InitiativeFilter
+  every: InitiativeFilter
+  length: NumberComparator
+}
+
+input ProjectMilestoneCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: NullableStringComparator
+  targetDate: NullableDateComparator
+  and: [ProjectMilestoneCollectionFilter!]
+  or: [ProjectMilestoneCollectionFilter!]
+  some: ProjectMilestoneFilter
+  every: ProjectMilestoneFilter
+  length: NumberComparator
+}
+
+input ProjectMilestoneFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: NullableStringComparator
+  targetDate: NullableDateComparator
+  and: [ProjectMilestoneFilter!]
+  or: [ProjectMilestoneFilter!]
+}
+
+input TeamCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  and: [TeamCollectionFilter!]
+  or: [TeamCollectionFilter!]
+  some: TeamFilter
+  every: TeamFilter
+  length: NumberComparator
+}
+
+input NullableCustomerFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slackChannelId: StringComparator
+  domains: StringArrayComparator
+  externalIds: StringArrayComparator
+  owner: NullableUserFilter
+  needs: CustomerNeedCollectionFilter
+  revenue: NumberComparator
+  size: NumberComparator
+  status: CustomerStatusFilter
+  tier: CustomerTierFilter
+  null: Boolean
+  and: [NullableCustomerFilter!]
+  or: [NullableCustomerFilter!]
+}
+
+input StringArrayComparator {
+  length: NumberComparator
+  every: StringItemComparator
+  some: StringItemComparator
+}
+
+input StringItemComparator {
+  eq: String
+  neq: String
+  in: [String!]
+  nin: [String!]
+  eqIgnoreCase: String
+  neqIgnoreCase: String
+  startsWith: String
+  startsWithIgnoreCase: String
+  notStartsWith: String
+  endsWith: String
+  notEndsWith: String
+  contains: String
+  containsIgnoreCase: String
+  notContains: String
+  notContainsIgnoreCase: String
+  containsIgnoreCaseAndAccent: String
+}
+
+input CustomerStatusFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  description: StringComparator
+  position: NumberComparator
+  type: StringComparator
+  color: StringComparator
+  and: [CustomerStatusFilter!]
+  or: [CustomerStatusFilter!]
+}
+
+input CustomerTierFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  description: StringComparator
+  position: NumberComparator
+  color: StringComparator
+  and: [CustomerTierFilter!]
+  or: [CustomerTierFilter!]
+}
+
+input CustomerNeedFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  priority: NumberComparator
+  project: NullableProjectFilter
+  issue: NullableIssueFilter
+  comment: NullableCommentFilter
+  customer: NullableCustomerFilter
+  and: [CustomerNeedFilter!]
+  or: [CustomerNeedFilter!]
+}
+
+input CommentFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  body: StringComparator
+  user: UserFilter
+  issue: NullableIssueFilter
+  projectUpdate: NullableProjectUpdateFilter
+  parent: NullableCommentFilter
+  documentContent: NullableDocumentContentFilter
+  reactions: ReactionCollectionFilter
+  needs: CustomerNeedCollectionFilter
+  and: [CommentFilter!]
+  or: [CommentFilter!]
+}
+
+input NullableCycleFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  number: NumberComparator
+  name: StringComparator
+  startsAt: DateComparator
+  endsAt: DateComparator
+  completedAt: DateComparator
+  isActive: BooleanComparator
+  isInCooldown: BooleanComparator
+  isNext: BooleanComparator
+  isPrevious: BooleanComparator
+  isFuture: BooleanComparator
+  isPast: BooleanComparator
+  team: TeamFilter
+  issues: IssueCollectionFilter
+  null: Boolean
+  and: [NullableCycleFilter!]
+  or: [NullableCycleFilter!]
+}
+
+input WorkflowStateFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  description: StringComparator
+  position: NumberComparator
+  type: StringComparator
+  team: TeamFilter
+  issues: IssueCollectionFilter
+  and: [WorkflowStateFilter!]
+  or: [WorkflowStateFilter!]
+}
+
+input AttachmentCollectionFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  title: StringComparator
+  subtitle: NullableStringComparator
+  url: StringComparator
+  creator: NullableUserFilter
+  sourceType: SourceTypeComparator
+  and: [AttachmentCollectionFilter!]
+  or: [AttachmentCollectionFilter!]
+  some: AttachmentFilter
+  every: AttachmentFilter
+  length: NumberComparator
+}
+
+input SourceTypeComparator {
+  eq: String
+  neq: String
+  in: [String!]
+  nin: [String!]
+  eqIgnoreCase: String
+  neqIgnoreCase: String
+  startsWith: String
+  startsWithIgnoreCase: String
+  notStartsWith: String
+  endsWith: String
+  notEndsWith: String
+  contains: String
+  containsIgnoreCase: String
+  notContains: String
+  notContainsIgnoreCase: String
+  containsIgnoreCaseAndAccent: String
+}
+
+input AttachmentFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  title: StringComparator
+  subtitle: NullableStringComparator
+  url: StringComparator
+  creator: NullableUserFilter
+  sourceType: SourceTypeComparator
+  and: [AttachmentFilter!]
+  or: [AttachmentFilter!]
+}
+
+input SlaStatusComparator {
+  eq: SlaStatus
+  neq: SlaStatus
+  in: [SlaStatus!]
+  nin: [SlaStatus!]
+  null: Boolean
+}
+
+enum SlaStatus {
+  Breached
+  HighRisk
+  MediumRisk
+  LowRisk
+  Completed
+  Failed
+}
+
+input IssueFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  number: NumberComparator
+  title: StringComparator
+  description: NullableStringComparator
+  priority: NullableNumberComparator
+  estimate: EstimateComparator
+  startedAt: NullableDateComparator
+  triagedAt: NullableDateComparator
+  completedAt: NullableDateComparator
+  canceledAt: NullableDateComparator
+  archivedAt: NullableDateComparator
+  autoClosedAt: NullableDateComparator
+  autoArchivedAt: NullableDateComparator
+  addedToCycleAt: NullableDateComparator
+  addedToCyclePeriod: CyclePeriodComparator
+  dueDate: NullableTimelessDateComparator
+  snoozedUntilAt: NullableDateComparator
+  assignee: NullableUserFilter
+  lastAppliedTemplate: NullableTemplateFilter
+  recurringIssueTemplate: NullableTemplateFilter
+  sourceMetadata: SourceMetadataComparator
+  creator: NullableUserFilter
+  parent: NullableIssueFilter
+  snoozedBy: NullableUserFilter
+  labels: IssueLabelCollectionFilter
+  subscribers: UserCollectionFilter
+  team: TeamFilter
+  projectMilestone: NullableProjectMilestoneFilter
+  comments: CommentCollectionFilter
+  cycle: NullableCycleFilter
+  project: NullableProjectFilter
+  state: WorkflowStateFilter
+  children: IssueCollectionFilter
+  attachments: AttachmentCollectionFilter
+  searchableContent: ContentComparator
+  hasRelatedRelations: RelationExistsComparator
+  hasDuplicateRelations: RelationExistsComparator
+  hasBlockedByRelations: RelationExistsComparator
+  hasBlockingRelations: RelationExistsComparator
+  slaStatus: SlaStatusComparator
+  reactions: ReactionCollectionFilter
+  needs: CustomerNeedCollectionFilter
+  customerCount: NumberComparator
+  and: [IssueFilter!]
+  or: [IssueFilter!]
+}
+
+type EntityExternalLinkConnection {
+  edges: [EntityExternalLinkEdge!]!
+  nodes: [EntityExternalLink!]!
+  pageInfo: PageInfo!
+}
+
+type EntityExternalLinkEdge {
+  node: EntityExternalLink!
+  cursor: String!
+}
+
+type EntityExternalLink implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  url: String!
+  label: String!
+  sortOrder: Float!
+  creator: User!
+  initiative: Initiative
+}
+
+type IntegrationsSettings implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  contextViewType: ContextViewType
+  slackIssueCreated: Boolean
+  slackIssueNewComment: Boolean
+  slackIssueStatusChangedDone: Boolean
+  slackIssueAddedToView: Boolean
+  slackIssueStatusChangedAll: Boolean
+  slackProjectUpdateCreated: Boolean
+  slackProjectUpdateCreatedToTeam: Boolean
+  slackProjectUpdateCreatedToWorkspace: Boolean
+  slackInitiativeUpdateCreated: Boolean
+  slackIssueAddedToTriage: Boolean
+  slackIssueSlaHighRisk: Boolean
+  slackIssueSlaBreached: Boolean
+  team: Team
+  project: Project
+  initiative: Initiative
+}
+
+enum ContextViewType {
+  activeIssues
+  activeCycle
+  upcomingCycle
+  backlog
+  triage
+}
+
+type InitiativeHistoryConnection {
+  edges: [InitiativeHistoryEdge!]!
+  nodes: [InitiativeHistory!]!
+  pageInfo: PageInfo!
+}
+
+type InitiativeHistoryEdge {
+  node: InitiativeHistory!
+  cursor: String!
+}
+
+type InitiativeHistory implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  entries: JSONObject!
+  initiative: Initiative!
+}
+
+type CommentConnection {
+  edges: [CommentEdge!]!
+  nodes: [Comment!]!
+  pageInfo: PageInfo!
+}
+
+type CommentEdge {
+  node: Comment!
+  cursor: String!
+}
+
+type Post implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  body: String!
+  bodyData: String!
+  writtenSummaryData: JSONObject
+  audioSummary: String
+  title: String
+  slugId: String!
+  creator: User
+  editedAt: DateTime
+  reactionData: JSONObject!
+  ttlUrl: String
+  user: User
+  project: Project
+  team: Team
+  type: PostType
+  evalLogId: String
+  feedSummaryScheduleAtCreate: FeedSummarySchedule
+}
+
+enum PostType {
+  summary
+  update
+}
+
+type ExternalUser implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  displayName: String!
+  email: String
+  avatarUrl: String
+  organization: Organization!
+  lastSeen: DateTime
+}
+
+type ActorBot {
+  id: ID
+  type: String!
+  subType: String
+  name: String
+  userDisplayName: String
+  avatarUrl: String
+}
+
+type SyncedExternalThread {
+  id: ID
+  type: String!
+  subType: String
+  name: String
+  displayName: String
+  url: String
+  isConnected: Boolean!
+  isPersonalIntegrationConnected: Boolean!
+  isPersonalIntegrationRequired: Boolean!
+}
+
+type Favorite implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  parent: Favorite
+  folderName: String
+  projectTab: ProjectTab
+  predefinedViewType: String
+  initiativeTab: InitiativeTab
+  owner: User!
+  sortOrder: Float!
+  children(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): FavoriteConnection!
+  issue: Issue
+  project: Project
+  facet: Facet
+  projectTeam: Team
+  cycle: Cycle
+  customView: CustomView
+  predefinedViewTeam: Team
+  document: Document
+  roadmap: Roadmap
+  initiative: Initiative
+  label: IssueLabel
+  user: User
+  customer: Customer
+  dashboard: Dashboard
+  url: String
+  title: String!
+  detail: String
+  color: String
+  icon: String
+}
+
+enum ProjectTab {
+  documents
+  issues
+}
+
+enum InitiativeTab {
+  overview
+  projects
+}
+
+type FavoriteConnection {
+  edges: [FavoriteEdge!]!
+  nodes: [Favorite!]!
+  pageInfo: PageInfo!
+}
+
+type FavoriteEdge {
+  node: Favorite!
+  cursor: String!
+}
+
+type Facet implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  sortOrder: Float!
+  sourceOrganization: Organization
+  sourceTeam: Team
+  sourceProject: Project
+  sourceInitiative: Initiative
+  sourcePage: FacetPageSource
+  targetCustomView: CustomView
+}
+
+enum FacetPageSource {
+  projects
+  teamIssues
+}
+
+type CustomView implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  description: String
+  icon: String
+  color: String
+  organization: Organization!
+  creator: User!
+  owner: User!
+  updatedBy: User
+  filters: JSONObject!
+  filterData: JSONObject!
+  projectFilterData: JSONObject
+  shared: Boolean!
+  slugId: String
+  modelName: String!
+  team: Team
+  projects(filter: ProjectFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectConnection!
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, sort: [IssueSortInput!]): IssueConnection!
+  userViewPreferences: ViewPreferences
+  organizationViewPreferences: ViewPreferences
+  viewPreferencesValues: ViewPreferencesValues
+}
+
+input IssueSortInput {
+  priority: PrioritySort
+  estimate: EstimateSort
+  title: TitleSort
+  label: LabelSort
+  labelGroup: LabelGroupSort
+  slaStatus: SlaStatusSort
+  createdAt: CreatedAtSort
+  updatedAt: UpdatedAtSort
+  completedAt: CompletedAtSort
+  dueDate: DueDateSort
+  cycle: CycleSort
+  milestone: MilestoneSort
+  assignee: AssigneeSort
+  project: ProjectSort
+  team: TeamSort
+  manual: ManualSort
+  workflowState: WorkflowStateSort
+  customer: CustomerSort
+  customerRevenue: CustomerRevenueSort
+  customerCount: CustomerCountSort
+  customerImportantCount: CustomerImportantCountSort
+}
+
+input PrioritySort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+  noPriorityFirst: Boolean = false
+}
+
+enum PaginationNulls {
+  first
+  last
+}
+
+enum PaginationSortOrder {
+  Ascending
+  Descending
+}
+
+input EstimateSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input TitleSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input LabelSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input LabelGroupSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+  labelGroupId: String!
+}
+
+input SlaStatusSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CreatedAtSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input UpdatedAtSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CompletedAtSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input DueDateSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CycleSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+  currentCycleFirst: Boolean = false
+}
+
+input MilestoneSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input AssigneeSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input ProjectSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input TeamSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input ManualSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input WorkflowStateSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CustomerSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CustomerRevenueSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CustomerCountSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CustomerImportantCountSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+type ViewPreferences implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  viewType: String!
+  preferences: ViewPreferencesValues!
+}
+
+type ViewPreferencesValues {
+  viewOrdering: String
+  issueGrouping: String
+  showCompletedIssues: String
+}
+
+type Cycle implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  number: Float!
+  name: String
+  description: String
+  startsAt: DateTime!
+  endsAt: DateTime!
+  completedAt: DateTime
+  autoArchivedAt: DateTime
+  issueCountHistory: [Float!]!
+  completedIssueCountHistory: [Float!]!
+  scopeHistory: [Float!]!
+  completedScopeHistory: [Float!]!
+  inProgressScopeHistory: [Float!]!
+  team: Team!
+  progressHistory: JSONObject!
+  currentProgress: JSONObject!
+  inheritedFrom: Cycle
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  uncompletedIssuesUponClose(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  progress: Float!
+}
+
+type Document implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  title: String!
+  icon: String
+  color: String
+  creator: User
+  updatedBy: User
+  project: Project
+  initiative: Initiative
+  team: Team
+  slugId: String!
+  lastAppliedTemplate: Template
+  hiddenAt: DateTime
+  trashed: Boolean
+  sortOrder: Float!
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  content: String
+  contentState: String
+  documentContentId: String
+  url: String!
+}
+
+type Roadmap implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  description: String
+  organization: Organization!
+  creator: User!
+  owner: User
+  slugId: String!
+  sortOrder: Float!
+  color: String
+  projects(filter: ProjectFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectConnection!
+  url: String!
+}
+
+type IssueLabel implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  description: String
+  color: String!
+  organization: Organization!
+  team: Team
+  creator: User
+  parent: IssueLabel
+  inheritedFrom: IssueLabel
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  children(filter: IssueLabelFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueLabelConnection!
+  isGroup: Boolean!
+}
+
+type IssueLabelConnection {
+  edges: [IssueLabelEdge!]!
+  nodes: [IssueLabel!]!
+  pageInfo: PageInfo!
+}
+
+type IssueLabelEdge {
+  node: IssueLabel!
+  cursor: String!
+}
+
+type Customer implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  logoUrl: String
+  domains: [String!]!
+  externalIds: [String!]!
+  slackChannelId: String
+  owner: User
+  status: CustomerStatus!
+  revenue: Float
+  size: Float
+  tier: CustomerTier
+  approximateNeedCount: Float!
+  slugId: String!
+  integration: Integration
+}
+
+type CustomerStatus implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  color: String!
+  type: CustomerStatusType!
+  description: String
+  position: Float!
+}
+
+enum CustomerStatusType {
+  active
+  inactive
+}
+
+type CustomerTier implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  color: String!
+  description: String
+  position: Float!
+  displayName: String!
+}
+
+type Integration implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  service: String!
+  organization: Organization!
+  team: Team
+  creator: User!
+}
+
+type Dashboard implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  slugId: String!
+  name: String!
+  description: String
+  icon: String
+  color: String
+  shared: Boolean!
+  organization: Organization!
+  creator: User
+  updatedBy: User
+  owner: User
+  issueFilter: JSONObject
+  projectFilter: JSONObject
+  layout: JSONObject!
+  widgets: JSONObject!
+}
+
+type InitiativeConnection {
+  edges: [InitiativeEdge!]!
+  nodes: [Initiative!]!
+  pageInfo: PageInfo!
+}
+
+type InitiativeEdge {
+  node: Initiative!
+  cursor: String!
+}
+
+type ProjectUpdateConnection {
+  edges: [ProjectUpdateEdge!]!
+  nodes: [ProjectUpdate!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectUpdateEdge {
+  node: ProjectUpdate!
+  cursor: String!
+}
+
+type DocumentConnection {
+  edges: [DocumentEdge!]!
+  nodes: [Document!]!
+  pageInfo: PageInfo!
+}
+
+type DocumentEdge {
+  node: Document!
+  cursor: String!
+}
+
+type ProjectMilestoneConnection {
+  edges: [ProjectMilestoneEdge!]!
+  nodes: [ProjectMilestone!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectMilestoneEdge {
+  node: ProjectMilestone!
+  cursor: String!
+}
+
+type ProjectMilestone implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  documentContent: DocumentContent
+  targetDate: TimelessDate
+  project: Project!
+  progressHistory: JSONObject!
+  currentProgress: JSONObject!
+  sortOrder: Float!
+  description: String
+  status: ProjectMilestoneStatus!
+  progress: Float!
+  descriptionState: String
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+}
+
+enum ProjectMilestoneStatus {
+  unstarted
+  next
+  overdue
+  done
+}
+
+type ProjectHistoryConnection {
+  edges: [ProjectHistoryEdge!]!
+  nodes: [ProjectHistory!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectHistoryEdge {
+  node: ProjectHistory!
+  cursor: String!
+}
+
+type ProjectHistory implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  entries: JSONObject!
+  project: Project!
+}
+
+type ProjectRelationConnection {
+  edges: [ProjectRelationEdge!]!
+  nodes: [ProjectRelation!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectRelationEdge {
+  node: ProjectRelation!
+  cursor: String!
+}
+
+type ProjectRelation implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  project: Project!
+  projectMilestone: ProjectMilestone
+  anchorType: String!
+  relatedProject: Project!
+  relatedProjectMilestone: ProjectMilestone
+  relatedAnchorType: String!
+  user: User
+}
+
+type Meeting implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  title: String!
+  location: String
+  meetingLink: String
+  recordingLink: String
+  icon: String
+  color: String
+  creator: User
+  updatedBy: User
+  project: Project
+  initiative: Initiative
+  startsAt: DateTime
+  endsAt: DateTime
+  hiddenAt: DateTime
+  trashed: Boolean
+  sortOrder: Float!
+}
+
+enum IntegrationService {
+  airbyte
+  discord
+  figma
+  figmaPlugin
+  front
+  github
+  githubEnterpriseServer
+  githubCommit
+  githubImport
+  githubPersonal
+  gitlab
+  googleCalendarPersonal
+  googleSheets
+  intercom
+  jira
+  jiraPersonal
+  launchDarkly
+  launchDarklyPersonal
+  loom
+  notion
+  opsgenie
+  pagerDuty
+  salesforce
+  slack
+  slackAsks
+  slackCustomViewNotifications
+  slackOrgProjectUpdatesPost
+  slackOrgInitiativeUpdatesPost
+  slackPersonal
+  slackPost
+  slackProjectPost
+  slackProjectUpdatesPost
+  slackInitiativePost
+  sentry
+  zendesk
+  email
+}
+
+type IssueHistoryConnection {
+  edges: [IssueHistoryEdge!]!
+  nodes: [IssueHistory!]!
+  pageInfo: PageInfo!
+}
+
+type IssueHistoryEdge {
+  node: IssueHistory!
+  cursor: String!
+}
+
+type IssueHistory implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  issue: Issue!
+  actorId: String
+  updatedDescription: Boolean
+  fromTitle: String
+  toTitle: String
+  fromAssigneeId: String
+  toAssigneeId: String
+  fromPriority: Float
+  toPriority: Float
+  fromTeamId: String
+  toTeamId: String
+  fromParentId: String
+  toParentId: String
+  fromStateId: String
+  toStateId: String
+  fromCycleId: String
+  toCycleId: String
+  toConvertedProjectId: String
+  fromProjectId: String
+  toProjectId: String
+  fromEstimate: Float
+  toEstimate: Float
+  archived: Boolean
+  trashed: Boolean
+  attachmentId: String
+  addedLabelIds: [String!]
+  removedLabelIds: [String!]
+  relationChanges: [IssueRelationHistoryPayload!]
+  autoClosed: Boolean
+  autoArchived: Boolean
+  fromDueDate: TimelessDate
+  toDueDate: TimelessDate
+  customerNeedId: String
+  changes: JSONObject
+  actor: User
+  actors: [User!]
+  descriptionUpdatedBy: [User!]
+  fromAssignee: User
+  toAssignee: User
+  fromCycle: Cycle
+  toCycle: Cycle
+  toConvertedProject: Project
+  fromProject: Project
+  toProject: Project
+  fromState: WorkflowState
+  toState: WorkflowState
+  fromTeam: Team
+  toTeam: Team
+  fromParent: Issue
+  toParent: Issue
+  attachment: Attachment
+  issueImport: IssueImport
+  triageResponsibilityNotifiedUsers: [User!]
+  botActor: ActorBot
+  addedLabels: [IssueLabel!]
+  removedLabels: [IssueLabel!]
+}
+
+type IssueRelationHistoryPayload {
+  identifier: String!
+  type: String!
+}
+
+type Attachment implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  title: String!
+  subtitle: String
+  url: String!
+  creator: User
+  externalUserCreator: ExternalUser
+  metadata: JSONObject!
+  source: JSONObject
+  sourceType: String
+  groupBySource: Boolean!
+  issue: Issue!
+}
+
+type IssueImport implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  teamName: String
+  creatorId: String!
+  service: String!
+  status: String!
+  mapping: JSONObject
+  error: String
+  progress: Float
+  csvFileUrl: String
+  errorMetadata: JSONObject
+  serviceMetadata: JSONObject
+  displayName: String!
+}
+
+type IssueRelationConnection {
+  edges: [IssueRelationEdge!]!
+  nodes: [IssueRelation!]!
+  pageInfo: PageInfo!
+}
+
+type IssueRelationEdge {
+  node: IssueRelation!
+  cursor: String!
+}
+
+type IssueRelation implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  issue: Issue!
+  relatedIssue: Issue!
+}
+
+type AttachmentConnection {
+  edges: [AttachmentEdge!]!
+  nodes: [Attachment!]!
+  pageInfo: PageInfo!
+}
+
+type AttachmentEdge {
+  node: Attachment!
+  cursor: String!
+}
+
+type CustomerNeedConnection {
+  edges: [CustomerNeedEdge!]!
+  nodes: [CustomerNeed!]!
+  pageInfo: PageInfo!
+}
+
+type CustomerNeedEdge {
+  node: CustomerNeed!
+  cursor: String!
+}
+
+type CustomerNeed implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  customer: Customer
+  issue: Issue
+  project: Project
+  comment: Comment
+  attachment: Attachment
+  projectAttachment: ProjectAttachment
+  priority: Float!
+  body: String
+  bodyData: String
+  creator: User
+  url: String
+}
+
+type ProjectAttachment implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  title: String!
+  subtitle: String
+  url: String!
+  creator: User
+  metadata: JSONObject!
+  source: JSONObject
+}
+
+type CycleConnection {
+  edges: [CycleEdge!]!
+  nodes: [Cycle!]!
+  pageInfo: PageInfo!
+}
+
+type CycleEdge {
+  node: Cycle!
+  cursor: String!
+}
+
+input CycleFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  number: NumberComparator
+  name: StringComparator
+  startsAt: DateComparator
+  endsAt: DateComparator
+  completedAt: DateComparator
+  isActive: BooleanComparator
+  isInCooldown: BooleanComparator
+  isNext: BooleanComparator
+  isPrevious: BooleanComparator
+  isFuture: BooleanComparator
+  isPast: BooleanComparator
+  team: TeamFilter
+  issues: IssueCollectionFilter
+  and: [CycleFilter!]
+  or: [CycleFilter!]
+}
+
+type TriageResponsibility implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  action: TriageResponsibilityAction!
+  manualSelection: TriageResponsibilityManualSelection
+  team: Team!
+  timeSchedule: TimeSchedule
+  currentUser: User
+}
+
+enum TriageResponsibilityAction {
+  assign
+  notify
+}
+
+type TriageResponsibilityManualSelection {
+  userIds: [String!]!
+  assignmentIndex: Int
+}
+
+type TimeSchedule implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  entries: [TimeScheduleEntry!]
+  externalId: String
+  externalUrl: String
+  organization: Organization!
+  integration: Integration
+}
+
+type TimeScheduleEntry {
+  startsAt: DateTime!
+  endsAt: DateTime!
+  userId: String
+  userEmail: String
+}
+
+type TeamMembership implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  user: User!
+  team: Team!
+  owner: Boolean!
+  sortOrder: Float!
+}
+
+type TeamMembershipConnection {
+  edges: [TeamMembershipEdge!]!
+  nodes: [TeamMembership!]!
+  pageInfo: PageInfo!
+}
+
+type TeamMembershipEdge {
+  node: TeamMembership!
+  cursor: String!
+}
+
+type WorkflowStateConnection {
+  edges: [WorkflowStateEdge!]!
+  nodes: [WorkflowState!]!
+  pageInfo: PageInfo!
+}
+
+type WorkflowStateEdge {
+  node: WorkflowState!
+  cursor: String!
+}
+
+type GitAutomationStateConnection {
+  edges: [GitAutomationStateEdge!]!
+  nodes: [GitAutomationState!]!
+  pageInfo: PageInfo!
+}
+
+type GitAutomationStateEdge {
+  node: GitAutomationState!
+  cursor: String!
+}
+
+type GitAutomationState implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  state: WorkflowState
+  team: Team!
+  targetBranch: GitAutomationTargetBranch
+  event: GitAutomationStates!
+  branchPattern: String
+}
+
+type GitAutomationTargetBranch implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  team: Team!
+  branchPattern: String!
+  isRegex: Boolean!
+  automationStates(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): GitAutomationStateConnection!
+}
+
+enum GitAutomationStates {
+  draft
+  start
+  review
+  mergeable
+  merge
+}
+
+type TemplateConnection {
+  edges: [TemplateEdge!]!
+  nodes: [Template!]!
+  pageInfo: PageInfo!
+}
+
+type TemplateEdge {
+  node: Template!
+  cursor: String!
+}
+
+type WebhookConnection {
+  edges: [WebhookEdge!]!
+  nodes: [Webhook!]!
+  pageInfo: PageInfo!
+}
+
+type WebhookEdge {
+  node: Webhook!
+  cursor: String!
+}
+
+type Webhook implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  label: String
+  url: String
+  enabled: Boolean!
+  team: Team
+  teamIds: [String!]
+  allPublicTeams: Boolean!
+  creator: User
+  secret: String
+  resourceTypes: [String!]!
+  failures: [WebhookFailureEvent!]!
+}
+
+type WebhookFailureEvent {
+  id: ID!
+  createdAt: DateTime!
+  webhook: Webhook!
+  url: String!
+  httpStatus: Float
+  responseOrError: String
+  executionId: String!
+}
+
+type IntegrationConnection {
+  edges: [IntegrationEdge!]!
+  nodes: [Integration!]!
+  pageInfo: PageInfo!
+}
+
+type IntegrationEdge {
+  node: Integration!
+  cursor: String!
+}
+
+type PaidSubscription implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  seats: Float!
+  seatsMinimum: Float
+  seatsMaximum: Float
+  creator: User
+  organization: Organization!
+  collectionMethod: String!
+  canceledAt: DateTime
+  cancelAt: DateTime
+  pendingChangeType: String
+  nextBillingAt: DateTime
+}
+
+type IssueDraftConnection {
+  edges: [IssueDraftEdge!]!
+  nodes: [IssueDraft!]!
+  pageInfo: PageInfo!
+}
+
+type IssueDraftEdge {
+  node: IssueDraft!
+  cursor: String!
+}
+
+type IssueDraft implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  title: String!
+  description: String
+  priority: Float!
+  estimate: Float
+  dueDate: TimelessDate
+  labelIds: [String!]!
+  teamId: String!
+  cycleId: String
+  projectId: String
+  projectMilestoneId: String
+  creator: User!
+  assigneeId: String
+  stateId: String!
+  parent: IssueDraft
+  parentId: String
+  sourceCommentId: String
+  parentIssue: Issue
+  parentIssueId: String
+  subIssueSortOrder: Float
+  priorityLabel: String!
+  descriptionData: JSON
+  attachments: JSONObject
+  needs: JSONObject
+  schedule: JSONObject
+}
+
+type DraftConnection {
+  edges: [DraftEdge!]!
+  nodes: [Draft!]!
+  pageInfo: PageInfo!
+}
+
+type DraftEdge {
+  node: Draft!
+  cursor: String!
+}
+
+type Draft implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  bodyData: JSON!
+  data: JSONObject
+  isAutogenerated: Boolean!
+  wasLocalDraft: Boolean!
+  user: User!
+  issue: Issue
+  project: Project
+  projectUpdate: ProjectUpdate
+  initiative: Initiative
+  initiativeUpdate: InitiativeUpdate
+  post: Post
+  parentComment: Comment
+  customerNeed: CustomerNeed
+}
+
+enum UserContextViewType {
+  assigned
+}
+
+type CustomViewNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView!
+  cycle: Cycle
+  label: IssueLabel
+  project: Project
+  initiative: Initiative
+  team: Team
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+type CycleNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView
+  cycle: Cycle!
+  label: IssueLabel
+  project: Project
+  initiative: Initiative
+  team: Team
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+type LabelNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView
+  cycle: Cycle
+  label: IssueLabel!
+  project: Project
+  initiative: Initiative
+  team: Team
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+type ProjectNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView
+  cycle: Cycle
+  label: IssueLabel
+  project: Project!
+  initiative: Initiative
+  team: Team
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+type InitiativeNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView
+  cycle: Cycle
+  label: IssueLabel
+  project: Project
+  initiative: Initiative!
+  team: Team
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+type TeamNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView
+  cycle: Cycle
+  label: IssueLabel
+  project: Project
+  initiative: Initiative
+  team: Team!
+  user: User
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+type UserNotificationSubscription implements NotificationSubscription & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  subscriber: User!
+  customer: Customer
+  customView: CustomView
+  cycle: Cycle
+  label: IssueLabel
+  project: Project
+  initiative: Initiative
+  team: Team
+  user: User!
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  active: Boolean!
+  notificationSubscriptionTypes: [String!]!
+}
+
+type IssueNotification implements Notification & Entity & Node {
+  commentId: String
+  parentCommentId: String
+  reactionEmoji: String
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  issueId: String!
+  issue: Issue!
+  comment: Comment
+  parentComment: Comment
+  team: Team!
+  subscriptions: [NotificationSubscription!]
+}
+
+interface Notification {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+}
+
+type ProjectNotification implements Notification & Entity & Node {
+  commentId: String
+  parentCommentId: String
+  reactionEmoji: String
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  projectId: String!
+  projectMilestoneId: String
+  projectUpdateId: String
+  project: Project!
+  initiative: Initiative
+  document: Document
+  projectUpdate: ProjectUpdate
+  initiativeUpdate: InitiativeUpdate
+  comment: Comment
+  parentComment: Comment
+}
+
+type InitiativeNotification implements Notification & Entity & Node {
+  commentId: String
+  parentCommentId: String
+  reactionEmoji: String
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  initiativeId: String!
+  initiativeUpdateId: String
+}
+
+type OauthClientApprovalNotification implements Notification & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  oauthClientApprovalId: String!
+  oauthClientApproval: OauthClientApproval!
+}
+
+type OauthClientApproval implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  oauthClientId: String!
+  requesterId: String!
+  responderId: String
+  status: OAuthClientApprovalStatus!
+  scopes: [String!]!
+  requestReason: String
+  denyReason: String
+}
+
+enum OAuthClientApprovalStatus {
+  requested
+  approved
+  denied
+}
+
+type DocumentNotification implements Notification & Entity & Node {
+  commentId: String
+  parentCommentId: String
+  reactionEmoji: String
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  documentId: String!
+}
+
+type PostNotification implements Notification & Entity & Node {
+  commentId: String
+  parentCommentId: String
+  reactionEmoji: String
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  postId: String!
+}
+
+type CustomerNeedNotification implements Notification & Entity & Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  customerNeedId: String!
+  relatedIssue: Issue
+  relatedProject: Project
+}
+
+type PullRequestNotification implements Notification & Entity & Node {
+  commentId: String
+  parentCommentId: String
+  reactionEmoji: String
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  actor: User
+  externalUserActor: ExternalUser
+  user: User!
+  readAt: DateTime
+  emailedAt: DateTime
+  snoozedUntilAt: DateTime
+  unsnoozedAt: DateTime
+  url: String!
+  inboxUrl: String!
+  title: String!
+  subtitle: String!
+  isLinearActor: Boolean!
+  actorAvatarUrl: String
+  actorInitials: String
+  actorAvatarColor: String!
+  issueStatusType: String
+  projectUpdateHealth: String
+  groupingKey: String!
+  groupingPriority: Float!
+  botActor: ActorBot
+  pullRequestId: String!
+  pullRequest: PullRequest!
+}
+
+type PullRequest implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  title: String!
+  number: Float!
+  sourceBranch: String!
+  targetBranch: String!
+  url: String!
+  status: PullRequestStatus!
+}
+
+enum PullRequestStatus {
+  draft
+  open
+  inReview
+  approved
+  merged
+  closed
+}
+
+type Query {
+  workflowStates(filter: WorkflowStateFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): WorkflowStateConnection!
+  workflowState(id: String!): WorkflowState!
+  webhooks(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): WebhookConnection!
+  webhook(id: String!): Webhook!
+  failuresForOauthWebhooks(oauthClientId: String!): [WebhookFailureEvent!]!
+  userSettings: UserSettings!
+  users(filter: UserFilter, includeDisabled: Boolean, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): UserConnection!
+  user(id: String!): User!
+  viewer: User!
+  triageResponsibilities(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TriageResponsibilityConnection!
+  triageResponsibility(id: String!): TriageResponsibility!
+  timeSchedules(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TimeScheduleConnection!
+  timeSchedule(id: String!): TimeSchedule!
+  templates: [Template!]!
+  template(id: String!): Template!
+  templatesForIntegration(integrationType: String!): [Template!]!
+  teams(filter: TeamFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamConnection!
+  administrableTeams(filter: TeamFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamConnection!
+  team(id: String!): Team!
+  teamMemberships(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamMembershipConnection!
+  teamMembership(id: String!): TeamMembership!
+  semanticSearch(query: String!, types: [SemanticSearchResultType!], maxResults: Int, includeArchived: Boolean): SemanticSearchPayload!
+  searchDocuments(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, term: String!, snippetSize: Float, includeComments: Boolean, teamId: String): DocumentSearchPayload!
+  searchProjects(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, term: String!, snippetSize: Float, includeComments: Boolean, teamId: String): ProjectSearchPayload!
+  searchIssues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, term: String!, snippetSize: Float, includeComments: Boolean, teamId: String): IssueSearchPayload!
+  roadmapToProjects(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): RoadmapToProjectConnection!
+  roadmapToProject(id: String!): RoadmapToProject!
+  roadmaps(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): RoadmapConnection!
+  roadmap(id: String!): Roadmap!
+  rateLimitStatus: RateLimitPayload!
+  pushSubscriptionTest(targetMobile: Boolean = false, sendStrategy: SendStrategy = push): PushSubscriptionTestPayload!
+  projectUpdates(filter: ProjectUpdateFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectUpdateConnection!
+  projectUpdate(id: String!): ProjectUpdate!
+  summarizeProjectUpdates(ids: [String!]!): SummaryPayload!
+  projectStatuses(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectStatusConnection!
+  projectStatusProjectCount(id: String!): ProjectStatusCountPayload!
+  projectStatus(id: String!): ProjectStatus!
+  projects(filter: ProjectFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectConnection!
+  project(id: String!): Project!
+  projectFilterSuggestion(prompt: String!): ProjectFilterSuggestionPayload!
+  projectRelations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectRelationConnection!
+  projectRelation(id: String!): ProjectRelation!
+  projectMilestones(filter: ProjectMilestoneFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectMilestoneConnection!
+  projectMilestone(id: String!): ProjectMilestone!
+  organization: Organization!
+  organizationExists(urlKey: String!): OrganizationExistsPayload!
+  archivedTeams: [Team!]!
+  organizationMeta(urlKey: String!): OrganizationMeta
+  organizationInvites(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): OrganizationInviteConnection!
+  organizationInvite(id: String!): OrganizationInvite!
+  organizationInviteDetails(id: String!): OrganizationInviteDetailsPayload!
+  organizationDomainClaimRequest(id: String!): OrganizationDomainClaimPayload!
+  notificationSubscriptions(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): NotificationSubscriptionConnection!
+  notificationSubscription(id: String!): NotificationSubscription!
+  notifications(filter: NotificationFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): NotificationConnection!
+  notificationsUnreadCount: Int!
+  notification(id: String!): Notification!
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, sort: [IssueSortInput!]): IssueConnection!
+  issue(id: String!): Issue!
+  issueSearch(filter: IssueFilter, query: String, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  issueVcsBranchSearch(branchName: String!): Issue
+  issueFigmaFileKeySearch(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, fileKey: String!): IssueConnection!
+  issuePriorityValues: [IssuePriorityValue!]!
+  issueFilterSuggestion(projectId: String, prompt: String!): IssueFilterSuggestionPayload!
+  issueRelations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueRelationConnection!
+  issueRelation(id: String!): IssueRelation!
+  issueLabels(filter: IssueLabelFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueLabelConnection!
+  issueLabel(id: String!): IssueLabel!
+  issueImportCheckCSV(csvUrl: String!, service: String!): IssueImportCheckPayload!
+  issueImportCheckSync(issueImportId: String!): IssueImportSyncCheckPayload!
+  issueImportJqlCheck(jiraHostname: String!, jiraToken: String!, jiraEmail: String!, jiraProject: String!, jql: String!): IssueImportJqlCheckPayload!
+  integrationsSettings(id: String!): IntegrationsSettings!
+  integrationTemplates(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IntegrationTemplateConnection!
+  integrationTemplate(id: String!): IntegrationTemplate!
+  integrations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IntegrationConnection!
+  integration(id: String!): Integration!
+  verifyGitHubEnterpriseServerInstallation: GitHubEnterpriseServerInstallVerificationPayload!
+  integrationHasScopes(scopes: [String!]!, integrationId: String!): IntegrationHasScopesPayload!
+  initiativeUpdates(filter: InitiativeUpdateFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): InitiativeUpdateConnection!
+  initiativeUpdate(id: String!): InitiativeUpdate!
+  initiativeToProjects(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): InitiativeToProjectConnection!
+  initiativeToProject(id: String!): InitiativeToProject!
+  initiatives(filter: InitiativeFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): InitiativeConnection!
+  initiative(id: String!): Initiative!
+  initiativeRelations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): InitiativeRelationConnection!
+  initiativeRelation(id: String!): ProjectRelation!
+  favorites(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): FavoriteConnection!
+  favorite(id: String!): Favorite!
+  externalUsers(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ExternalUserConnection!
+  externalUser(id: String!): ExternalUser!
+  entityExternalLink(id: String!): EntityExternalLink!
+  emojis(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): EmojiConnection!
+  emoji(id: String!): Emoji!
+  documents(filter: DocumentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): DocumentConnection!
+  document(id: String!): Document!
+  documentContentHistory(id: String!): DocumentContentHistoryPayload!
+  cycles(filter: CycleFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CycleConnection!
+  cycle(id: String!): Cycle!
+  customerTiers(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CustomerTierConnection!
+  customerTier(id: String!): CustomerTier!
+  customerStatuses(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CustomerStatusConnection!
+  customerStatus(id: String!): CustomerStatus!
+  customers(filter: CustomerFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, sorts: [CustomerSortInput!]): CustomerConnection!
+  customer(id: String!): Customer!
+  customerNeeds(filter: CustomerNeedFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CustomerNeedConnection!
+  customerNeed(id: String!): CustomerNeed!
+  issueTitleSuggestionFromCustomerRequest(request: String!): IssueTitleSuggestionFromCustomerRequestPayload!
+  customViews(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CustomViewConnection!
+  customView(id: String!): CustomView!
+  customViewDetailsSuggestion(modelName: String, filter: JSONObject!): CustomViewSuggestionPayload!
+  customViewHasSubscribers(id: String!): CustomViewHasSubscribersPayload!
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  comment(id: String, hash: String): Comment!
+  availableUsers: AuthResolverResponse!
+  authenticationSessions: [AuthenticationSessionResponse!]!
+  ssoUrlFromEmail(isDesktop: Boolean, email: String!): SsoUrlFromEmailResponse!
+  auditEntryTypes: [AuditEntryType!]!
+  auditEntries(filter: AuditEntryFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): AuditEntryConnection!
+  attachments(filter: AttachmentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): AttachmentConnection!
+  attachment(id: String!): Attachment!
+  attachmentsForURL(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy, url: String!): AttachmentConnection!
+  attachmentIssue(id: String!): Issue!
+  attachmentSources(teamId: String): AttachmentSourcesPayload!
+  applicationInfo(clientId: String!): Application!
+  applicationInfoByIds(ids: [String!]!): [Application!]!
+  applicationInfoWithMembershipsByIds(clientIds: [String!]!): [WorkspaceAuthorizedApplication!]!
+  applicationWithAuthorization(redirectUri: String, actor: String = "user", scope: [String!]!, clientId: String!): UserAuthorizedApplication!
+  authorizedApplications: [AuthorizedApplication!]!
+  workspaceAuthorizedApplications: [WorkspaceAuthorizedApplication!]!
+  apiKeys(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ApiKeyConnection!
+}
+
+type UserSettings implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  notificationDeliveryPreferences: NotificationDeliveryPreferences!
+  unsubscribedFrom: [String!]!
+  user: User!
+  calendarHash: String
+  subscribedToChangelog: Boolean!
+  subscribedToDPA: Boolean!
+  subscribedToInviteAccepted: Boolean!
+  subscribedToPrivacyLegalUpdates: Boolean!
+  showFullUserNames: Boolean!
+  autoAssignToSelf: Boolean!
+  notificationCategoryPreferences: NotificationCategoryPreferences!
+  notificationChannelPreferences: NotificationChannelPreferences!
+}
+
+type NotificationDeliveryPreferences {
+  mobile: NotificationDeliveryPreferencesChannel
+}
+
+type NotificationDeliveryPreferencesChannel {
+  notificationsDisabled: Boolean
+  schedule: NotificationDeliveryPreferencesSchedule
+}
+
+type NotificationDeliveryPreferencesSchedule {
+  disabled: Boolean
+  sunday: NotificationDeliveryPreferencesDay!
+  monday: NotificationDeliveryPreferencesDay!
+  tuesday: NotificationDeliveryPreferencesDay!
+  wednesday: NotificationDeliveryPreferencesDay!
+  thursday: NotificationDeliveryPreferencesDay!
+  friday: NotificationDeliveryPreferencesDay!
+  saturday: NotificationDeliveryPreferencesDay!
+}
+
+type NotificationDeliveryPreferencesDay {
+  start: String
+  end: String
+}
+
+type NotificationCategoryPreferences {
+  assignments: NotificationChannelPreferences!
+  statusChanges: NotificationChannelPreferences!
+  commentsAndReplies: NotificationChannelPreferences!
+  mentions: NotificationChannelPreferences!
+  reactions: NotificationChannelPreferences!
+  subscriptions: NotificationChannelPreferences!
+  documentChanges: NotificationChannelPreferences!
+  postsAndUpdates: NotificationChannelPreferences!
+  reminders: NotificationChannelPreferences!
+  reviews: NotificationChannelPreferences!
+  appsAndIntegrations: NotificationChannelPreferences!
+  system: NotificationChannelPreferences!
+  triage: NotificationChannelPreferences!
+  customers: NotificationChannelPreferences!
+}
+
+type NotificationChannelPreferences {
+  mobile: Boolean!
+  desktop: Boolean!
+  email: Boolean!
+  slack: Boolean!
+}
+
+type TriageResponsibilityConnection {
+  edges: [TriageResponsibilityEdge!]!
+  nodes: [TriageResponsibility!]!
+  pageInfo: PageInfo!
+}
+
+type TriageResponsibilityEdge {
+  node: TriageResponsibility!
+  cursor: String!
+}
+
+type TimeScheduleConnection {
+  edges: [TimeScheduleEdge!]!
+  nodes: [TimeSchedule!]!
+  pageInfo: PageInfo!
+}
+
+type TimeScheduleEdge {
+  node: TimeSchedule!
+  cursor: String!
+}
+
+type SemanticSearchPayload {
+  enabled: Boolean!
+  results: [SemanticSearchResult!]!
+}
+
+type SemanticSearchResult implements Node {
+  id: ID!
+  type: SemanticSearchResultType!
+  issue: Issue
+  project: Project
+  initiative: Initiative
+  document: Document
+}
+
+enum SemanticSearchResultType {
+  issue
+  project
+  initiative
+  document
+}
+
+type DocumentSearchPayload {
+  edges: [DocumentSearchResultEdge!]!
+  nodes: [DocumentSearchResult!]!
+  pageInfo: PageInfo!
+  archivePayload: ArchiveResponse!
+  totalCount: Float!
+}
+
+type DocumentSearchResultEdge {
+  node: DocumentSearchResult!
+  cursor: String!
+}
+
+type DocumentSearchResult implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  title: String!
+  icon: String
+  color: String
+  creator: User
+  updatedBy: User
+  project: Project
+  initiative: Initiative
+  team: Team
+  slugId: String!
+  lastAppliedTemplate: Template
+  hiddenAt: DateTime
+  trashed: Boolean
+  sortOrder: Float!
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  content: String
+  contentState: String
+  documentContentId: String
+  url: String!
+  metadata: JSONObject!
+}
+
+type ArchiveResponse {
+  archive: String!
+  totalCount: Float!
+  databaseVersion: Float!
+  includesDependencies: Boolean!
+}
+
+type ProjectSearchPayload {
+  edges: [ProjectSearchResultEdge!]!
+  nodes: [ProjectSearchResult!]!
+  pageInfo: PageInfo!
+  archivePayload: ArchiveResponse!
+  totalCount: Float!
+}
+
+type ProjectSearchResultEdge {
+  node: ProjectSearchResult!
+  cursor: String!
+}
+
+type ProjectSearchResult implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  updateReminderFrequencyInWeeks: Float
+  updateReminderFrequency: Float
+  frequencyResolution: FrequencyResolutionType!
+  updateRemindersDay: Day
+  updateRemindersHour: Float
+  name: String!
+  description: String!
+  documentContent: DocumentContent
+  slugId: String!
+  icon: String
+  color: String!
+  status: ProjectStatus!
+  creator: User
+  lead: User
+  projectUpdateRemindersPausedUntilAt: DateTime
+  startDate: TimelessDate
+  startDateResolution: DateResolutionType
+  targetDate: TimelessDate
+  targetDateResolution: DateResolutionType
+  startedAt: DateTime
+  completedAt: DateTime
+  canceledAt: DateTime
+  autoArchivedAt: DateTime
+  trashed: Boolean
+  sortOrder: Float!
+  prioritySortOrder: Float!
+  convertedFromIssue: Issue
+  lastAppliedTemplate: Template
+  priority: Int!
+  lastUpdate: ProjectUpdate
+  health: ProjectUpdateHealthType
+  healthUpdatedAt: DateTime
+  issueCountHistory: [Float!]!
+  completedIssueCountHistory: [Float!]!
+  scopeHistory: [Float!]!
+  completedScopeHistory: [Float!]!
+  inProgressScopeHistory: [Float!]!
+  progressHistory: JSONObject!
+  currentProgress: JSONObject!
+  slackNewIssue: Boolean!
+  slackIssueComments: Boolean!
+  slackIssueStatuses: Boolean!
+  labelIds: [String!]!
+  favorite: Favorite
+  url: String!
+  initiatives(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): InitiativeConnection!
+  teams(filter: TeamFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): TeamConnection!
+  members(filter: UserFilter, includeDisabled: Boolean, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): UserConnection!
+  projectUpdates(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectUpdateConnection!
+  documents(filter: DocumentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): DocumentConnection!
+  projectMilestones(filter: ProjectMilestoneFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectMilestoneConnection!
+  issues(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  externalLinks(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): EntityExternalLinkConnection!
+  history(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectHistoryConnection!
+  progress: Float!
+  scope: Float!
+  integrationsSettings: IntegrationsSettings
+  content: String
+  contentState: String
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  relations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectRelationConnection!
+  inverseRelations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): ProjectRelationConnection!
+  state: String!
+  priorityLabel: String!
+  metadata: JSONObject!
+}
+
+type IssueSearchPayload {
+  edges: [IssueSearchResultEdge!]!
+  nodes: [IssueSearchResult!]!
+  pageInfo: PageInfo!
+  archivePayload: ArchiveResponse!
+  totalCount: Float!
+}
+
+type IssueSearchResultEdge {
+  node: IssueSearchResult!
+  cursor: String!
+}
+
+type IssueSearchResult implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  number: Float!
+  title: String!
+  priority: Float!
+  estimate: Float
+  boardOrder: Float!
+  sortOrder: Float!
+  prioritySortOrder: Float!
+  startedAt: DateTime
+  completedAt: DateTime
+  startedTriageAt: DateTime
+  triagedAt: DateTime
+  canceledAt: DateTime
+  autoClosedAt: DateTime
+  autoArchivedAt: DateTime
+  dueDate: TimelessDate
+  slaStartedAt: DateTime
+  slaMediumRiskAt: DateTime
+  slaHighRiskAt: DateTime
+  slaBreachesAt: DateTime
+  slaType: String
+  addedToProjectAt: DateTime
+  addedToCycleAt: DateTime
+  addedToTeamAt: DateTime
+  trashed: Boolean
+  snoozedUntilAt: DateTime
+  activitySummary: JSONObject
+  documentContent: DocumentContent
+  labelIds: [String!]!
+  team: Team!
+  cycle: Cycle
+  project: Project
+  projectMilestone: ProjectMilestone
+  lastAppliedTemplate: Template
+  recurringIssueTemplate: Template
+  previousIdentifiers: [String!]!
+  creator: User
+  externalUserCreator: ExternalUser
+  assignee: User
+  snoozedBy: User
+  state: WorkflowState!
+  subIssueSortOrder: Float
+  reactionData: JSONObject!
+  priorityLabel: String!
+  sourceComment: Comment
+  integrationSourceType: IntegrationService
+  botActor: ActorBot
+  favorite: Favorite
+  identifier: String!
+  url: String!
+  branchName: String!
+  customerTicketCount: Int!
+  subscribers(filter: UserFilter, includeDisabled: Boolean, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): UserConnection!
+  parent: Issue
+  children(filter: IssueFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueConnection!
+  comments(filter: CommentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CommentConnection!
+  history(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueHistoryConnection!
+  labels(filter: IssueLabelFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueLabelConnection!
+  relations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueRelationConnection!
+  inverseRelations(before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): IssueRelationConnection!
+  attachments(filter: AttachmentFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): AttachmentConnection!
+  description: String
+  descriptionState: String
+  reactions: [Reaction!]!
+  needs(filter: CustomerNeedFilter, before: String, after: String, first: Int, last: Int, includeArchived: Boolean, orderBy: PaginationOrderBy): CustomerNeedConnection!
+  metadata: JSONObject!
+}
+
+type RoadmapToProjectConnection {
+  edges: [RoadmapToProjectEdge!]!
+  nodes: [RoadmapToProject!]!
+  pageInfo: PageInfo!
+}
+
+type RoadmapToProjectEdge {
+  node: RoadmapToProject!
+  cursor: String!
+}
+
+type RoadmapToProject implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  project: Project!
+  roadmap: Roadmap!
+  sortOrder: String!
+}
+
+type RoadmapConnection {
+  edges: [RoadmapEdge!]!
+  nodes: [Roadmap!]!
+  pageInfo: PageInfo!
+}
+
+type RoadmapEdge {
+  node: Roadmap!
+  cursor: String!
+}
+
+type RateLimitPayload {
+  identifier: String
+  kind: String!
+  limits: [RateLimitResultPayload!]!
+}
+
+type RateLimitResultPayload {
+  type: String!
+  requestedAmount: Float!
+  allowedAmount: Float!
+  period: Float!
+  remainingAmount: Float!
+  reset: Float!
+}
+
+type PushSubscriptionTestPayload {
+  success: Boolean!
+}
+
+enum SendStrategy {
+  desktopThenPush
+  desktopAndPush
+  desktop
+  push
+}
+
+input ProjectUpdateFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  user: UserFilter
+  project: ProjectFilter
+  reactions: ReactionCollectionFilter
+  and: [ProjectUpdateFilter!]
+  or: [ProjectUpdateFilter!]
+}
+
+type SummaryPayload {
+  summary: String!
+}
+
+type ProjectStatusConnection {
+  edges: [ProjectStatusEdge!]!
+  nodes: [ProjectStatus!]!
+  pageInfo: PageInfo!
+}
+
+type ProjectStatusEdge {
+  node: ProjectStatus!
+  cursor: String!
+}
+
+type ProjectStatusCountPayload {
+  count: Float!
+  privateCount: Float!
+  archivedTeamCount: Float!
+}
+
+type ProjectFilterSuggestionPayload {
+  filter: JSONObject
+  logId: String
+}
+
+type OrganizationExistsPayload {
+  success: Boolean!
+  exists: Boolean!
+}
+
+type OrganizationMeta {
+  region: String!
+  allowedAuthServices: [String!]!
+}
+
+type OrganizationInviteConnection {
+  edges: [OrganizationInviteEdge!]!
+  nodes: [OrganizationInvite!]!
+  pageInfo: PageInfo!
+}
+
+type OrganizationInviteEdge {
+  node: OrganizationInvite!
+  cursor: String!
+}
+
+type OrganizationInvite implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  email: String!
+  role: UserRoleType!
+  external: Boolean!
+  acceptedAt: DateTime
+  expiresAt: DateTime
+  metadata: JSONObject
+  inviter: User!
+  invitee: User
+  organization: Organization!
+}
+
+enum UserRoleType {
+  admin
+  guest
+  user
+  app
+}
+
+union OrganizationInviteDetailsPayload = OrganizationInviteFullDetailsPayload | OrganizationAcceptedOrExpiredInviteDetailsPayload
+
+type OrganizationInviteFullDetailsPayload {
+  status: OrganizationInviteStatus!
+  inviter: String!
+  email: String!
+  role: UserRoleType!
+  createdAt: DateTime!
+  organizationName: String!
+  organizationId: String!
+  organizationLogoUrl: String
+  accepted: Boolean!
+  expired: Boolean!
+  allowedAuthServices: [String!]!
+}
+
+enum OrganizationInviteStatus {
+  pending
+  accepted
+  expired
+}
+
+type OrganizationAcceptedOrExpiredInviteDetailsPayload {
+  status: OrganizationInviteStatus!
+}
+
+type OrganizationDomainClaimPayload {
+  verificationString: String!
+}
+
+type NotificationSubscriptionConnection {
+  edges: [NotificationSubscriptionEdge!]!
+  nodes: [NotificationSubscription!]!
+  pageInfo: PageInfo!
+}
+
+type NotificationSubscriptionEdge {
+  node: NotificationSubscription!
+  cursor: String!
+}
+
+type NotificationConnection {
+  edges: [NotificationEdge!]!
+  nodes: [Notification!]!
+  pageInfo: PageInfo!
+}
+
+type NotificationEdge {
+  node: Notification!
+  cursor: String!
+}
+
+input NotificationFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  type: StringComparator
+  archivedAt: DateComparator
+  and: [NotificationFilter!]
+  or: [NotificationFilter!]
+}
+
+type IssuePriorityValue {
+  priority: Int!
+  label: String!
+}
+
+type IssueFilterSuggestionPayload {
+  filter: JSONObject
+  logId: String
+}
+
+type IssueImportCheckPayload {
+  success: Boolean!
+}
+
+type IssueImportSyncCheckPayload {
+  canSync: Boolean!
+  error: String
+}
+
+type IssueImportJqlCheckPayload {
+  success: Boolean!
+  count: Float
+  error: String
+}
+
+type IntegrationTemplateConnection {
+  edges: [IntegrationTemplateEdge!]!
+  nodes: [IntegrationTemplate!]!
+  pageInfo: PageInfo!
+}
+
+type IntegrationTemplateEdge {
+  node: IntegrationTemplate!
+  cursor: String!
+}
+
+type IntegrationTemplate implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  template: Template!
+  integration: Integration!
+  foreignEntityId: String
+}
+
+type GitHubEnterpriseServerInstallVerificationPayload {
+  success: Boolean!
+}
+
+type IntegrationHasScopesPayload {
+  hasAllScopes: Boolean!
+  missingScopes: [String!]
+}
+
+type InitiativeUpdateConnection {
+  edges: [InitiativeUpdateEdge!]!
+  nodes: [InitiativeUpdate!]!
+  pageInfo: PageInfo!
+}
+
+type InitiativeUpdateEdge {
+  node: InitiativeUpdate!
+  cursor: String!
+}
+
+input InitiativeUpdateFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  user: UserFilter
+  initiative: InitiativeFilter
+  reactions: ReactionCollectionFilter
+  and: [InitiativeUpdateFilter!]
+  or: [InitiativeUpdateFilter!]
+}
+
+type InitiativeToProjectConnection {
+  edges: [InitiativeToProjectEdge!]!
+  nodes: [InitiativeToProject!]!
+  pageInfo: PageInfo!
+}
+
+type InitiativeToProjectEdge {
+  node: InitiativeToProject!
+  cursor: String!
+}
+
+type InitiativeToProject implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  project: Project!
+  initiative: Initiative!
+  sortOrder: String!
+}
+
+type InitiativeRelationConnection {
+  edges: [InitiativeRelationEdge!]!
+  nodes: [InitiativeRelation!]!
+  pageInfo: PageInfo!
+}
+
+type InitiativeRelationEdge {
+  node: InitiativeRelation!
+  cursor: String!
+}
+
+type InitiativeRelation implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  initiative: Initiative!
+  relatedInitiative: Initiative!
+  user: User
+  sortOrder: Float!
+}
+
+type ExternalUserConnection {
+  edges: [ExternalUserEdge!]!
+  nodes: [ExternalUser!]!
+  pageInfo: PageInfo!
+}
+
+type ExternalUserEdge {
+  node: ExternalUser!
+  cursor: String!
+}
+
+type EmojiConnection {
+  edges: [EmojiEdge!]!
+  nodes: [Emoji!]!
+  pageInfo: PageInfo!
+}
+
+type EmojiEdge {
+  node: Emoji!
+  cursor: String!
+}
+
+type Emoji implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  url: String!
+  source: String!
+  creator: User
+  organization: Organization!
+}
+
+type DocumentContentHistoryPayload {
+  history: [DocumentContentHistoryType!]!
+  success: Boolean!
+}
+
+type DocumentContentHistoryType {
+  id: String!
+  createdAt: DateTime!
+  contentDataSnapshotAt: DateTime!
+  contentData: JSON
+  actorIds: [String!]
+}
+
+type CustomerTierConnection {
+  edges: [CustomerTierEdge!]!
+  nodes: [CustomerTier!]!
+  pageInfo: PageInfo!
+}
+
+type CustomerTierEdge {
+  node: CustomerTier!
+  cursor: String!
+}
+
+type CustomerStatusConnection {
+  edges: [CustomerStatusEdge!]!
+  nodes: [CustomerStatus!]!
+  pageInfo: PageInfo!
+}
+
+type CustomerStatusEdge {
+  node: CustomerStatus!
+  cursor: String!
+}
+
+type CustomerConnection {
+  edges: [CustomerEdge!]!
+  nodes: [Customer!]!
+  pageInfo: PageInfo!
+}
+
+type CustomerEdge {
+  node: Customer!
+  cursor: String!
+}
+
+input CustomerFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  name: StringComparator
+  slackChannelId: StringComparator
+  domains: StringArrayComparator
+  externalIds: StringArrayComparator
+  owner: NullableUserFilter
+  needs: CustomerNeedCollectionFilter
+  revenue: NumberComparator
+  size: NumberComparator
+  status: CustomerStatusFilter
+  tier: CustomerTierFilter
+  and: [CustomerFilter!]
+  or: [CustomerFilter!]
+}
+
+input CustomerSortInput {
+  name: NameSort
+  createdAt: CustomerCreatedAtSort
+  owner: OwnerSort
+  status: CustomerStatusSort
+  revenue: RevenueSort
+  size: SizeSort
+  tier: TierSort
+  approximateNeedCount: ApproximateNeedCountSort
+}
+
+input NameSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CustomerCreatedAtSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input OwnerSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input CustomerStatusSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input RevenueSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input SizeSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input TierSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+input ApproximateNeedCountSort {
+  nulls: PaginationNulls = last
+  order: PaginationSortOrder
+}
+
+type IssueTitleSuggestionFromCustomerRequestPayload {
+  lastSyncId: Float!
+  title: String!
+  logId: String
+}
+
+type CustomViewConnection {
+  edges: [CustomViewEdge!]!
+  nodes: [CustomView!]!
+  pageInfo: PageInfo!
+}
+
+type CustomViewEdge {
+  node: CustomView!
+  cursor: String!
+}
+
+type CustomViewSuggestionPayload {
+  name: String
+  description: String
+  icon: String
+}
+
+type CustomViewHasSubscribersPayload {
+  hasSubscribers: Boolean!
+}
+
+type AuthResolverResponse {
+  id: String!
+  email: String!
+  allowDomainAccess: Boolean
+  users: [AuthUser!]!
+  lockedUsers: [AuthUser!]!
+  availableOrganizations: [AuthOrganization!]
+  lockedOrganizations: [AuthOrganization!]
+  lastUsedOrganizationId: String
+  token: String
+}
+
+type AuthUser {
+  id: ID!
+  name: String!
+  displayName: String!
+  email: String!
+  avatarUrl: String
+  role: UserRoleType!
+  active: Boolean!
+  userAccountId: String!
+  organization: AuthOrganization!
+}
+
+type AuthOrganization {
+  id: ID!
+  name: String!
+  enabled: Boolean!
+  urlKey: String!
+  previousUrlKeys: [String!]!
+  logoUrl: String
+  deletionRequestedAt: DateTime
+  releaseChannel: ReleaseChannel!
+  samlEnabled: Boolean!
+  samlSettings: JSONObject
+  allowedAuthServices: [String!]!
+  scimEnabled: Boolean!
+  serviceId: String!
+  region: String!
+  userCount: Float!
+}
+
+type AuthenticationSessionResponse {
+  id: String!
+  type: AuthenticationSessionType!
+  ip: String
+  locationCountry: String
+  locationCountryCode: String
+  countryCodes: [String!]!
+  locationRegionCode: String
+  locationCity: String
+  userAgent: String
+  browserType: String
+  service: String
+  lastActiveAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  location: String
+  operatingSystem: String
+  client: String
+  name: String!
+  isCurrentSession: Boolean!
+}
+
+enum AuthenticationSessionType {
+  web
+  desktop
+  ios
+  android
+}
+
+type SsoUrlFromEmailResponse {
+  success: Boolean!
+  samlSsoUrl: String!
+}
+
+type AuditEntryType {
+  type: String!
+  description: String!
+}
+
+type AuditEntryConnection {
+  edges: [AuditEntryEdge!]!
+  nodes: [AuditEntry!]!
+  pageInfo: PageInfo!
+}
+
+type AuditEntryEdge {
+  node: AuditEntry!
+  cursor: String!
+}
+
+type AuditEntry implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  type: String!
+  organization: Organization
+  actor: User
+  actorId: String
+  ip: String
+  countryCode: String
+  metadata: JSONObject
+  requestInformation: JSONObject
+}
+
+input AuditEntryFilter {
+  id: IDComparator
+  createdAt: DateComparator
+  updatedAt: DateComparator
+  type: StringComparator
+  ip: StringComparator
+  countryCode: StringComparator
+  actor: NullableUserFilter
+  and: [AuditEntryFilter!]
+  or: [AuditEntryFilter!]
+}
+
+type AttachmentSourcesPayload {
+  sources: JSONObject!
+}
+
+type Application {
+  id: String!
+  clientId: String!
+  name: String!
+  description: String
+  developer: String!
+  developerUrl: String!
+  imageUrl: String
+}
+
+type WorkspaceAuthorizedApplication {
+  name: String!
+  imageUrl: String
+  scope: [String!]!
+  appId: String!
+  clientId: String!
+  webhooksEnabled: Boolean!
+  totalMembers: Float!
+  memberships: [AuthMembership!]!
+}
+
+type AuthMembership {
+  userId: String!
+  authorizingUserId: String
+  createdAt: DateTime!
+}
+
+type UserAuthorizedApplication {
+  id: String!
+  clientId: String!
+  name: String!
+  description: String
+  developer: String!
+  developerUrl: String!
+  imageUrl: String
+  isAuthorized: Boolean!
+  createdByLinear: Boolean!
+  webhooksEnabled: Boolean!
+  appUserEnabled: Boolean!
+  appUserAuthentication: AppUserAuthentication
+  approvalErrorCode: String
+}
+
+type AppUserAuthentication {
+  createdAt: DateTime!
+  scope: [String!]!
+  requestedSyncGroups: Boolean!
+  authorizingUser: AuthorizingUser
+}
+
+type AuthorizingUser {
+  name: String!
+  displayName: String!
+}
+
+type AuthorizedApplication {
+  name: String!
+  imageUrl: String
+  scope: [String!]!
+  appId: String!
+  clientId: String!
+  webhooksEnabled: Boolean!
+}
+
+type ApiKeyConnection {
+  edges: [ApiKeyEdge!]!
+  nodes: [ApiKey!]!
+  pageInfo: PageInfo!
+}
+
+type ApiKeyEdge {
+  node: ApiKey!
+  cursor: String!
+}
+
+type ApiKey implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  label: String!
+  scope: [String!]
+  requestedSyncGroups: [String!]
+}
+
+type Mutation {
+  workflowStateCreate(input: WorkflowStateCreateInput!): WorkflowStatePayload!
+  workflowStateUpdate(input: WorkflowStateUpdateInput!, id: String!): WorkflowStatePayload!
+  workflowStateArchive(id: String!): WorkflowStateArchivePayload!
+  webhookCreate(input: WebhookCreateInput!): WebhookPayload!
+  webhookUpdate(input: WebhookUpdateInput!, id: String!): WebhookPayload!
+  webhookDelete(id: String!): DeletePayload!
+  viewPreferencesCreate(input: ViewPreferencesCreateInput!): ViewPreferencesPayload!
+  viewPreferencesUpdate(input: ViewPreferencesUpdateInput!, id: String!): ViewPreferencesPayload!
+  viewPreferencesDelete(id: String!): DeletePayload!
+  userSettingsUpdate(input: UserSettingsUpdateInput!, id: String!): UserSettingsPayload!
+  userSettingsFlagsReset(flags: [UserFlagType!]): UserSettingsFlagsResetPayload!
+  userFlagUpdate(operation: UserFlagUpdateOperation!, flag: UserFlagType!): UserSettingsFlagPayload!
+  notificationCategoryChannelSubscriptionUpdate(channel: NotificationChannel!, category: NotificationCategory!, subscribe: Boolean!): UserSettingsPayload!
+  userUpdate(input: UserUpdateInput!, id: String!): UserPayload!
+  userDiscordConnect(redirectUri: String!, code: String!): UserPayload!
+  userExternalUserDisconnect(service: String!): UserPayload!
+  userPromoteAdmin(id: String!): UserAdminPayload!
+  userDemoteAdmin(id: String!): UserAdminPayload!
+  userPromoteMember(id: String!): UserAdminPayload!
+  userDemoteMember(id: String!): UserAdminPayload!
+  userSuspend(id: String!): UserAdminPayload!
+  userUnsuspend(id: String!): UserAdminPayload!
+  triageResponsibilityCreate(input: TriageResponsibilityCreateInput!): TriageResponsibilityPayload!
+  triageResponsibilityUpdate(input: TriageResponsibilityUpdateInput!, id: String!): TriageResponsibilityPayload!
+  triageResponsibilityDelete(id: String!): DeletePayload!
+  timeScheduleCreate(input: TimeScheduleCreateInput!): TimeSchedulePayload!
+  timeScheduleUpdate(input: TimeScheduleUpdateInput!, id: String!): TimeSchedulePayload!
+  timeScheduleUpsertExternal(input: TimeScheduleUpdateInput!, externalId: String!): TimeSchedulePayload!
+  timeScheduleDelete(id: String!): DeletePayload!
+  timeScheduleRefreshIntegrationSchedule(id: String!): TimeSchedulePayload!
+  templateCreate(input: TemplateCreateInput!): TemplatePayload!
+  templateUpdate(input: TemplateUpdateInput!, id: String!): TemplatePayload!
+  templateDelete(id: String!): DeletePayload!
+  teamCreate(copySettingsFromTeamId: String, input: TeamCreateInput!): TeamPayload!
+  teamUpdate(mapping: InheritanceEntityMapping, input: TeamUpdateInput!, id: String!): TeamPayload!
+  teamDelete(id: String!): DeletePayload!
+  teamUnarchive(id: String!): TeamArchivePayload!
+  teamCyclesDelete(id: String!): TeamPayload!
+  teamMembershipCreate(input: TeamMembershipCreateInput!): TeamMembershipPayload!
+  teamMembershipUpdate(input: TeamMembershipUpdateInput!, id: String!): TeamMembershipPayload!
+  teamMembershipDelete(alsoLeaveParentTeams: Boolean, id: String!): DeletePayload!
+  teamKeyDelete(id: String!): DeletePayload!
+  roadmapToProjectCreate(input: RoadmapToProjectCreateInput!): RoadmapToProjectPayload!
+  roadmapToProjectUpdate(input: RoadmapToProjectUpdateInput!, id: String!): RoadmapToProjectPayload!
+  roadmapToProjectDelete(id: String!): DeletePayload!
+  roadmapCreate(input: RoadmapCreateInput!): RoadmapPayload!
+  roadmapUpdate(input: RoadmapUpdateInput!, id: String!): RoadmapPayload!
+  roadmapArchive(id: String!): RoadmapArchivePayload!
+  roadmapUnarchive(id: String!): RoadmapArchivePayload!
+  roadmapDelete(id: String!): DeletePayload!
+  createCsvExportReport(includePrivateTeamIds: [String!]): CreateCsvExportReportPayload!
+  reactionCreate(input: ReactionCreateInput!): ReactionPayload!
+  reactionDelete(id: String!): DeletePayload!
+  pushSubscriptionCreate(input: PushSubscriptionCreateInput!): PushSubscriptionPayload!
+  pushSubscriptionDelete(id: String!): PushSubscriptionPayload!
+  projectUpdateCreate(input: ProjectUpdateCreateInput!): ProjectUpdatePayload!
+  projectUpdateUpdate(input: ProjectUpdateUpdateInput!, id: String!): ProjectUpdatePayload!
+  projectUpdateArchive(id: String!): ProjectUpdateArchivePayload!
+  projectUpdateUnarchive(id: String!): ProjectUpdateArchivePayload!
+  projectUpdateDelete(id: String!): DeletePayload!
+  createProjectUpdateReminder(userId: String, projectId: String!): ProjectUpdateReminderPayload!
+  projectStatusCreate(input: ProjectStatusCreateInput!): ProjectStatusPayload!
+  projectStatusUpdate(input: ProjectStatusUpdateInput!, id: String!): ProjectStatusPayload!
+  projectStatusArchive(id: String!): ProjectStatusArchivePayload!
+  projectStatusUnarchive(id: String!): ProjectStatusArchivePayload!
+  projectCreate(connectSlackChannel: Boolean, input: ProjectCreateInput!): ProjectPayload!
+  projectUpdate(input: ProjectUpdateInput!, id: String!): ProjectPayload!
+  projectReassignStatus(newProjectStatusId: String!, originalProjectStatusId: String!): SuccessPayload!
+  projectDelete(id: String!): ProjectArchivePayload!
+  projectArchive(trash: Boolean, id: String!): ProjectArchivePayload!
+  projectUnarchive(id: String!): ProjectArchivePayload!
+  projectRelationCreate(input: ProjectRelationCreateInput!): ProjectRelationPayload!
+  projectRelationUpdate(input: ProjectRelationUpdateInput!, id: String!): ProjectRelationPayload!
+  projectRelationDelete(id: String!): DeletePayload!
+  projectMilestoneCreate(input: ProjectMilestoneCreateInput!): ProjectMilestonePayload!
+  projectMilestoneUpdate(input: ProjectMilestoneUpdateInput!, id: String!): ProjectMilestonePayload!
+  projectMilestoneDelete(id: String!): DeletePayload!
+  projectMilestoneMove(input: ProjectMilestoneMoveInput!, id: String!): ProjectMilestoneMovePayload!
+  organizationUpdate(input: OrganizationUpdateInput!): OrganizationPayload!
+  organizationDeleteChallenge: OrganizationDeletePayload!
+  organizationDelete(input: DeleteOrganizationInput!): OrganizationDeletePayload!
+  organizationCancelDelete: OrganizationCancelDeletePayload!
+  organizationStartTrialForPlan(input: OrganizationStartTrialInput!): OrganizationStartTrialPayload!
+  organizationStartTrial: OrganizationStartTrialPayload!
+  organizationInviteCreate(input: OrganizationInviteCreateInput!): OrganizationInvitePayload!
+  organizationInviteUpdate(input: OrganizationInviteUpdateInput!, id: String!): OrganizationInvitePayload!
+  resendOrganizationInvite(id: String!): DeletePayload!
+  resendOrganizationInviteByEmail(email: String!): DeletePayload!
+  organizationInviteDelete(id: String!): DeletePayload!
+  organizationDomainClaim(id: String!): OrganizationDomainSimplePayload!
+  organizationDomainVerify(input: OrganizationDomainVerificationInput!): OrganizationDomainPayload!
+  organizationDomainCreate(triggerEmailVerification: Boolean, input: OrganizationDomainCreateInput!): OrganizationDomainPayload!
+  organizationDomainUpdate(input: OrganizationDomainUpdateInput!, id: String!): OrganizationDomainPayload!
+  organizationDomainDelete(id: String!): DeletePayload!
+  notificationSubscriptionCreate(input: NotificationSubscriptionCreateInput!): NotificationSubscriptionPayload!
+  notificationSubscriptionUpdate(input: NotificationSubscriptionUpdateInput!, id: String!): NotificationSubscriptionPayload!
+  notificationSubscriptionDelete(id: String!): DeletePayload!
+  notificationUpdate(input: NotificationUpdateInput!, id: String!): NotificationPayload!
+  notificationMarkReadAll(readAt: DateTime!, input: NotificationEntityInput!): NotificationBatchActionPayload!
+  notificationMarkUnreadAll(input: NotificationEntityInput!): NotificationBatchActionPayload!
+  notificationSnoozeAll(snoozedUntilAt: DateTime!, input: NotificationEntityInput!): NotificationBatchActionPayload!
+  notificationUnsnoozeAll(unsnoozedAt: DateTime!, input: NotificationEntityInput!): NotificationBatchActionPayload!
+  notificationArchive(id: String!): NotificationArchivePayload!
+  notificationArchiveAll(input: NotificationEntityInput!): NotificationBatchActionPayload!
+  notificationUnarchive(id: String!): NotificationArchivePayload!
+  issueCreate(input: IssueCreateInput!): IssuePayload!
+  issueBatchCreate(input: IssueBatchCreateInput!): IssueBatchPayload!
+  issueUpdate(input: IssueUpdateInput!, id: String!): IssuePayload!
+  issueBatchUpdate(input: IssueUpdateInput!, ids: [UUID!]!): IssueBatchPayload!
+  issueArchive(trash: Boolean, id: String!): IssueArchivePayload!
+  issueUnarchive(id: String!): IssueArchivePayload!
+  issueDelete(permanentlyDelete: Boolean, id: String!): IssueArchivePayload!
+  issueAddLabel(labelId: String!, id: String!): IssuePayload!
+  issueRemoveLabel(labelId: String!, id: String!): IssuePayload!
+  issueReminder(reminderAt: DateTime!, id: String!): IssuePayload!
+  issueSubscribe(userId: String, id: String!): IssuePayload!
+  issueUnsubscribe(userId: String, id: String!): IssuePayload!
+  issueDescriptionUpdateFromFront(description: String!, id: String!): IssuePayload!
+  updateIssueSummary(id: String!): IssuePayload!
+  issueRelationCreate(overrideCreatedAt: DateTime, input: IssueRelationCreateInput!): IssueRelationPayload!
+  issueRelationUpdate(input: IssueRelationUpdateInput!, id: String!): IssueRelationPayload!
+  issueRelationDelete(id: String!): DeletePayload!
+  issueLabelCreate(replaceTeamLabels: Boolean, input: IssueLabelCreateInput!): IssueLabelPayload!
+  issueLabelUpdate(replaceTeamLabels: Boolean, input: IssueLabelUpdateInput!, id: String!): IssueLabelPayload!
+  issueLabelDelete(id: String!): DeletePayload!
+  issueImportCreateGithub(teamId: String, teamName: String, githubRepoIds: [Int!], githubLabels: [String!], instantProcess: Boolean, includeClosedIssues: Boolean): IssueImportPayload!
+  issueImportCreateJira(teamId: String, teamName: String, jiraToken: String!, jiraProject: String!, jiraEmail: String!, jiraHostname: String!, jql: String, instantProcess: Boolean, includeClosedIssues: Boolean, id: String): IssueImportPayload!
+  issueImportCreateCSVJira(teamId: String, teamName: String, csvUrl: String!, jiraHostname: String, jiraToken: String, jiraEmail: String): IssueImportPayload!
+  issueImportCreateClubhouse(teamId: String, teamName: String, clubhouseToken: String!, clubhouseGroupName: String!, instantProcess: Boolean, includeClosedIssues: Boolean, id: String): IssueImportPayload!
+  issueImportCreateAsana(teamId: String, teamName: String, asanaToken: String!, asanaTeamName: String!, instantProcess: Boolean, includeClosedIssues: Boolean, id: String): IssueImportPayload!
+  issueImportCreateLinearV2(linearSourceOrganizationId: String!, id: String): IssueImportPayload!
+  issueImportDelete(issueImportId: String!): IssueImportDeletePayload!
+  issueImportProcess(mapping: JSONObject!, issueImportId: String!): IssueImportPayload!
+  issueImportUpdate(input: IssueImportUpdateInput!, id: String!): IssueImportPayload!
+  integrationsSettingsCreate(input: IntegrationsSettingsCreateInput!): IntegrationsSettingsPayload!
+  integrationsSettingsUpdate(input: IntegrationsSettingsUpdateInput!, id: String!): IntegrationsSettingsPayload!
+  integrationTemplateCreate(input: IntegrationTemplateCreateInput!): IntegrationTemplatePayload!
+  integrationTemplateDelete(id: String!): DeletePayload!
+  integrationUpdate(input: IntegrationUpdateInput!, id: String!): IntegrationPayload!
+  integrationSettingsUpdate(input: IntegrationSettingsInput!, id: String!): IntegrationPayload!
+  integrationGithubCommitCreate: GitHubCommitIntegrationPayload!
+  integrationGithubConnect(code: String!, installationId: String!): IntegrationPayload!
+  integrationGithubImportConnect(code: String!, installationId: String!): IntegrationPayload!
+  integrationGithubImportRefresh(id: String!): IntegrationPayload!
+  integrationGitHubEnterpriseServerConnect(organizationName: String, githubUrl: String!): GitHubEnterpriseServerPayload!
+  integrationGitlabConnect(gitlabUrl: String!, accessToken: String!): GitLabIntegrationCreatePayload!
+  airbyteIntegrationConnect(input: AirbyteConfigurationInput!): IntegrationPayload!
+  integrationGoogleCalendarPersonalConnect(code: String!): IntegrationPayload!
+  integrationLaunchDarklyConnect(code: String!, projectKey: String!, environment: String!): IntegrationPayload!
+  integrationLaunchDarklyPersonalConnect(code: String!): IntegrationPayload!
+  jiraIntegrationConnect(input: JiraConfigurationInput!): IntegrationPayload!
+  integrationJiraUpdate(input: JiraUpdateInput!): IntegrationPayload!
+  integrationJiraPersonal(code: String, accessToken: String): IntegrationPayload!
+  integrationGitHubPersonal(code: String!): IntegrationPayload!
+  integrationIntercom(domainUrl: String, redirectUri: String!, code: String!): IntegrationPayload!
+  integrationIntercomDelete: IntegrationPayload!
+  integrationIntercomSettingsUpdate(input: IntercomSettingsInput!): IntegrationPayload!
+  integrationDiscord(redirectUri: String!, code: String!): IntegrationPayload!
+  integrationOpsgenieConnect(apiKey: String!): IntegrationPayload!
+  integrationOpsgenieRefreshScheduleMappings: IntegrationPayload!
+  integrationPagerDutyConnect(code: String!, redirectUri: String!): IntegrationPayload!
+  integrationPagerDutyRefreshScheduleMappings: IntegrationPayload!
+  updateIntegrationSlackScopes(integrationId: String!, redirectUri: String!, code: String!): IntegrationPayload!
+  integrationSlack(shouldUseV2Auth: Boolean, redirectUri: String!, code: String!): IntegrationPayload!
+  integrationSlackAsks(redirectUri: String!, code: String!): IntegrationPayload!
+  integrationSlackPersonal(redirectUri: String!, code: String!): IntegrationPayload!
+  integrationAsksConnectChannel(redirectUri: String!, code: String!): AsksChannelConnectPayload!
+  integrationSlackPost(shouldUseV2Auth: Boolean, redirectUri: String!, teamId: String!, code: String!): SlackChannelConnectPayload!
+  integrationSlackProjectPost(service: String!, redirectUri: String!, projectId: String!, code: String!): SlackChannelConnectPayload!
+  integrationSlackInitiativePost(redirectUri: String!, initiativeId: String!, code: String!): SlackChannelConnectPayload!
+  integrationSlackCustomViewNotifications(redirectUri: String!, customViewId: String!, code: String!): SlackChannelConnectPayload!
+  integrationSlackCustomerChannelLink(redirectUri: String!, customerId: String!, code: String!): SuccessPayload!
+  integrationSlackOrgProjectUpdatesPost(redirectUri: String!, code: String!): SlackChannelConnectPayload!
+  integrationSlackOrgInitiativeUpdatesPost(redirectUri: String!, code: String!): SlackChannelConnectPayload!
+  integrationSlackImportEmojis(redirectUri: String!, code: String!): IntegrationPayload!
+  integrationFigma(redirectUri: String!, code: String!): IntegrationPayload!
+  integrationGoogleSheets(code: String!): IntegrationPayload!
+  refreshGoogleSheetsData(id: String!): IntegrationPayload!
+  integrationSentryConnect(organizationSlug: String!, code: String!, installationId: String!): IntegrationPayload!
+  integrationFront(redirectUri: String!, code: String!): IntegrationPayload!
+  integrationZendesk(subdomain: String!, code: String!, scope: String!, redirectUri: String!): IntegrationPayload!
+  integrationLoom: IntegrationPayload!
+  integrationDelete(id: String!): DeletePayload!
+  integrationArchive(id: String!): DeletePayload!
+  integrationRequest(input: IntegrationRequestInput!): IntegrationRequestPayload!
+  initiativeUpdateCreate(input: InitiativeUpdateCreateInput!): InitiativeUpdatePayload!
+  initiativeUpdateUpdate(input: InitiativeUpdateUpdateInput!, id: String!): InitiativeUpdatePayload!
+  initiativeUpdateArchive(id: String!): InitiativeUpdateArchivePayload!
+  createInitiativeUpdateReminder(userId: String, initiativeId: String!): InitiativeUpdateReminderPayload!
+  initiativeUpdateUnarchive(id: String!): InitiativeUpdateArchivePayload!
+  initiativeToProjectCreate(input: InitiativeToProjectCreateInput!): InitiativeToProjectPayload!
+  initiativeToProjectUpdate(input: InitiativeToProjectUpdateInput!, id: String!): InitiativeToProjectPayload!
+  initiativeToProjectDelete(id: String!): DeletePayload!
+  initiativeCreate(input: InitiativeCreateInput!): InitiativePayload!
+  initiativeUpdate(input: InitiativeUpdateInput!, id: String!): InitiativePayload!
+  initiativeArchive(id: String!): InitiativeArchivePayload!
+  initiativeUnarchive(id: String!): InitiativeArchivePayload!
+  initiativeDelete(id: String!): DeletePayload!
+  initiativeRelationCreate(input: InitiativeRelationCreateInput!): InitiativeRelationPayload!
+  initiativeRelationUpdate(input: InitiativeRelationUpdateInput!, id: String!): DeletePayload!
+  initiativeRelationDelete(id: String!): DeletePayload!
+  gitAutomationTargetBranchCreate(input: GitAutomationTargetBranchCreateInput!): GitAutomationTargetBranchPayload!
+  gitAutomationTargetBranchUpdate(input: GitAutomationTargetBranchUpdateInput!, id: String!): GitAutomationTargetBranchPayload!
+  gitAutomationTargetBranchDelete(id: String!): DeletePayload!
+  gitAutomationStateCreate(input: GitAutomationStateCreateInput!): GitAutomationStatePayload!
+  gitAutomationStateUpdate(input: GitAutomationStateUpdateInput!, id: String!): GitAutomationStatePayload!
+  gitAutomationStateDelete(id: String!): DeletePayload!
+  fileUpload(metaData: JSON, makePublic: Boolean, size: Int!, contentType: String!, filename: String!): UploadPayload!
+  importFileUpload(metaData: JSON, size: Int!, contentType: String!, filename: String!): UploadPayload!
+  imageUploadFromUrl(url: String!): ImageUploadFromUrlPayload!
+  favoriteCreate(input: FavoriteCreateInput!): FavoritePayload!
+  favoriteUpdate(input: FavoriteUpdateInput!, id: String!): FavoritePayload!
+  favoriteDelete(id: String!): DeletePayload!
+  entityExternalLinkCreate(input: EntityExternalLinkCreateInput!): EntityExternalLinkPayload!
+  entityExternalLinkUpdate(input: EntityExternalLinkUpdateInput!, id: String!): EntityExternalLinkPayload!
+  entityExternalLinkDelete(id: String!): DeletePayload!
+  emojiCreate(input: EmojiCreateInput!): EmojiPayload!
+  emojiDelete(id: String!): DeletePayload!
+  emailUnsubscribe(input: EmailUnsubscribeInput!): EmailUnsubscribePayload!
+  emailIntakeAddressCreate(input: EmailIntakeAddressCreateInput!): EmailIntakeAddressPayload!
+  emailIntakeAddressRotate(id: String!): EmailIntakeAddressPayload!
+  emailIntakeAddressUpdate(input: EmailIntakeAddressUpdateInput!, id: String!): EmailIntakeAddressPayload!
+  emailIntakeAddressDelete(id: String!): DeletePayload!
+  documentCreate(input: DocumentCreateInput!): DocumentPayload!
+  documentUpdate(input: DocumentUpdateInput!, id: String!): DocumentPayload!
+  documentDelete(id: String!): DocumentArchivePayload!
+  documentUnarchive(id: String!): DocumentArchivePayload!
+  cycleCreate(input: CycleCreateInput!): CyclePayload!
+  cycleUpdate(input: CycleUpdateInput!, id: String!): CyclePayload!
+  cycleArchive(id: String!): CycleArchivePayload!
+  cycleShiftAll(input: CycleShiftAllInput!): CyclePayload!
+  cycleStartUpcomingCycleToday(id: String!): CyclePayload!
+  customerTierCreate(input: CustomerTierCreateInput!): CustomerTierPayload!
+  customerTierUpdate(input: CustomerTierUpdateInput!, id: String!): CustomerTierPayload!
+  customerTierDelete(id: String!): DeletePayload!
+  customerCreate(input: CustomerCreateInput!): CustomerPayload!
+  customerUpdate(input: CustomerUpdateInput!, id: String!): CustomerPayload!
+  customerDelete(id: String!): DeletePayload!
+  customerMerge(sourceCustomerId: String!, targetCustomerId: String!): CustomerPayload!
+  customerUpsert(input: CustomerUpsertInput!): CustomerPayload!
+  customerNeedCreate(input: CustomerNeedCreateInput!): CustomerNeedPayload!
+  customerNeedCreateFromAttachment(input: CustomerNeedCreateFromAttachmentInput!): CustomerNeedPayload!
+  customerNeedUpdate(input: CustomerNeedUpdateInput!, id: String!): CustomerNeedPayload!
+  customerNeedDelete(keepAttachment: Boolean, id: String!): DeletePayload!
+  customerNeedArchive(id: String!): CustomerNeedArchivePayload!
+  customerNeedUnarchive(id: String!): CustomerNeedArchivePayload!
+  customViewCreate(input: CustomViewCreateInput!): CustomViewPayload!
+  customViewUpdate(input: CustomViewUpdateInput!, id: String!): CustomViewPayload!
+  customViewDelete(id: String!): DeletePayload!
+  contactCreate(input: ContactCreateInput!): ContactPayload!
+  contactSalesCreate(input: ContactSalesCreateInput!): ContactPayload!
+  commentCreate(input: CommentCreateInput!): CommentPayload!
+  commentUpdate(input: CommentUpdateInput!, id: String!): CommentPayload!
+  commentDelete(id: String!): DeletePayload!
+  commentResolve(resolvingCommentId: String, id: String!): CommentPayload!
+  commentUnresolve(id: String!): CommentPayload!
+  emailUserAccountAuthChallenge(input: EmailUserAccountAuthChallengeInput!): EmailUserAccountAuthChallengeResponse!
+  emailTokenUserAccountAuth(input: TokenUserAccountAuthInput!): AuthResolverResponse!
+  samlTokenUserAccountAuth(input: TokenUserAccountAuthInput!): AuthResolverResponse!
+  googleUserAccountAuth(input: GoogleUserAccountAuthInput!): AuthResolverResponse!
+  passkeyLoginStart(authId: String!): PasskeyLoginStartResponse!
+  passkeyLoginFinish(response: JSONObject!, authId: String!): AuthResolverResponse!
+  createOrganizationFromOnboarding(survey: OnboardingCustomerSurvey, input: CreateOrganizationInput!): CreateOrJoinOrganizationResponse!
+  joinOrganizationFromOnboarding(input: JoinOrganizationInput!): CreateOrJoinOrganizationResponse!
+  leaveOrganization(organizationId: String!): CreateOrJoinOrganizationResponse!
+  logout(reason: String): LogoutResponse!
+  logoutSession(sessionId: String!): LogoutResponse!
+  logoutAllSessions(reason: String): LogoutResponse!
+  logoutOtherSessions(reason: String): LogoutResponse!
+  attachmentCreate(input: AttachmentCreateInput!): AttachmentPayload!
+  attachmentUpdate(input: AttachmentUpdateInput!, id: String!): AttachmentPayload!
+  attachmentLinkURL(createAsUser: String, displayIconUrl: String, title: String, url: String!, issueId: String!, id: String): AttachmentPayload!
+  attachmentLinkGitLabMR(createAsUser: String, displayIconUrl: String, title: String, issueId: String!, id: String, url: String!, projectPathWithNamespace: String!, number: Float!): AttachmentPayload!
+  attachmentLinkGitHubIssue(createAsUser: String, displayIconUrl: String, title: String, issueId: String!, id: String, url: String!): AttachmentPayload!
+  attachmentLinkGitHubPR(createAsUser: String, displayIconUrl: String, title: String, issueId: String!, id: String, url: String!, linkKind: GitLinkKind): AttachmentPayload!
+  attachmentLinkZendesk(createAsUser: String, displayIconUrl: String, title: String, ticketId: String!, issueId: String!, id: String, url: String): AttachmentPayload!
+  attachmentLinkDiscord(createAsUser: String, displayIconUrl: String, title: String, issueId: String!, id: String, channelId: String!, messageId: String!, url: String!): AttachmentPayload!
+  attachmentSyncToSlack(id: String!): AttachmentPayload!
+  attachmentLinkSlack(createAsUser: String, displayIconUrl: String, title: String, issueId: String!, url: String!, id: String, syncToCommentThread: Boolean): AttachmentPayload!
+  attachmentLinkFront(createAsUser: String, displayIconUrl: String, title: String, conversationId: String!, issueId: String!, id: String): FrontAttachmentPayload!
+  attachmentLinkIntercom(createAsUser: String, displayIconUrl: String, title: String, conversationId: String!, partId: String, id: String, issueId: String!): AttachmentPayload!
+  attachmentLinkJiraIssue(createAsUser: String, displayIconUrl: String, title: String, issueId: String!, jiraIssueId: String!, id: String, url: String): AttachmentPayload!
+  attachmentDelete(id: String!): DeletePayload!
+  apiKeyCreate(input: ApiKeyCreateInput!): ApiKeyPayload!
+  apiKeyDelete(id: String!): DeletePayload!
+  apiKeyUpdate(input: ApiKeyUpdateInput!, id: String!): ApiKeyPayload!
+}
+
+type WorkflowStatePayload {
+  lastSyncId: Float!
+  workflowState: WorkflowState!
+  success: Boolean!
+}
+
+input WorkflowStateCreateInput {
+  id: String
+  type: String!
+  name: String!
+  color: String!
+  description: String
+  position: Float
+  teamId: String!
+}
+
+input WorkflowStateUpdateInput {
+  name: String
+  color: String
+  description: String
+  position: Float
+}
+
+type WorkflowStateArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: WorkflowState
+}
+
+interface ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+}
+
+type WebhookPayload {
+  lastSyncId: Float!
+  webhook: Webhook!
+  success: Boolean!
+}
+
+input WebhookCreateInput {
+  label: String
+  id: String
+  enabled: Boolean = true
+  secret: String
+  url: String!
+  resourceTypes: [String!]!
+  teamId: String
+  allPublicTeams: Boolean
+}
+
+input WebhookUpdateInput {
+  label: String
+  secret: String
+  enabled: Boolean
+  url: String
+  resourceTypes: [String!]
+}
+
+type DeletePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entityId: String!
+}
+
+type ViewPreferencesPayload {
+  lastSyncId: Float!
+  viewPreferences: ViewPreferences!
+  success: Boolean!
+}
+
+input ViewPreferencesCreateInput {
+  id: String
+  type: ViewPreferencesType!
+  viewType: ViewType!
+  preferences: JSONObject!
+  insights: JSONObject
+  teamId: String
+  projectId: String
+  roadmapId: String
+  initiativeId: String
+  labelId: String
+  customViewId: String
+  userId: String
+}
+
+enum ViewPreferencesType {
+  organization
+  user
+}
+
+enum ViewType {
+  inbox
+  myIssues
+  myIssuesCreatedByMe
+  myIssuesSubscribedTo
+  myIssuesActivity
+  userProfile
+  userProfileCreatedByUser
+  board
+  completedCycle
+  cycle
+  project
+  projectDocuments
+  label
+  triage
+  activeIssues
+  backlog
+  subIssues
+  allIssues
+  customView
+  customViews
+  roadmapAll
+  initiative
+  initiativeOverview
+  initiativeOverviewSubInitiatives
+  initiatives
+  initiativesPlanned
+  initiativesCompleted
+  projects
+  projectsAll
+  projectsBacklog
+  projectsClosed
+  search
+  splitSearch
+  teams
+  archive
+  quickView
+  issueIdentifiers
+  customers
+  customer
+  embeddedCustomerNeeds
+  projectCustomerNeeds
+  reviews
+  myReviews
+  feedAll
+  feedCreated
+  feedFollowing
+  feedPopular
+  workspaceMembers
+  customRoadmap
+  roadmap
+  roadmaps
+  roadmapClosed
+  roadmapBacklog
+}
+
+input ViewPreferencesUpdateInput {
+  preferences: JSONObject
+  insights: JSONObject
+}
+
+type UserSettingsPayload {
+  lastSyncId: Float!
+  userSettings: UserSettings!
+  success: Boolean!
+}
+
+input UserSettingsUpdateInput {
+  settings: JSONObject
+  subscribedToChangelog: Boolean
+  subscribedToDPA: Boolean
+  subscribedToInviteAccepted: Boolean
+  subscribedToPrivacyLegalUpdates: Boolean
+  notificationCategoryPreferences: NotificationCategoryPreferencesInput
+  notificationChannelPreferences: PartialNotificationChannelPreferencesInput
+  notificationDeliveryPreferences: NotificationDeliveryPreferencesInput
+  usageWarningHistory: JSONObject
+  feedSummarySchedule: FeedSummarySchedule
+}
+
+input NotificationCategoryPreferencesInput {
+  assignments: PartialNotificationChannelPreferencesInput
+  statusChanges: PartialNotificationChannelPreferencesInput
+  commentsAndReplies: PartialNotificationChannelPreferencesInput
+  mentions: PartialNotificationChannelPreferencesInput
+  reactions: PartialNotificationChannelPreferencesInput
+  subscriptions: PartialNotificationChannelPreferencesInput
+  documentChanges: PartialNotificationChannelPreferencesInput
+  postsAndUpdates: PartialNotificationChannelPreferencesInput
+  reminders: PartialNotificationChannelPreferencesInput
+  reviews: PartialNotificationChannelPreferencesInput
+  appsAndIntegrations: PartialNotificationChannelPreferencesInput
+  triage: PartialNotificationChannelPreferencesInput
+  customers: PartialNotificationChannelPreferencesInput
+}
+
+input PartialNotificationChannelPreferencesInput {
+  mobile: Boolean
+  desktop: Boolean
+  email: Boolean
+  slack: Boolean
+}
+
+input NotificationDeliveryPreferencesInput {
+  mobile: NotificationDeliveryPreferencesChannelInput
+}
+
+input NotificationDeliveryPreferencesChannelInput {
+  schedule: NotificationDeliveryPreferencesScheduleInput
+}
+
+input NotificationDeliveryPreferencesScheduleInput {
+  disabled: Boolean
+  sunday: NotificationDeliveryPreferencesDayInput!
+  monday: NotificationDeliveryPreferencesDayInput!
+  tuesday: NotificationDeliveryPreferencesDayInput!
+  wednesday: NotificationDeliveryPreferencesDayInput!
+  thursday: NotificationDeliveryPreferencesDayInput!
+  friday: NotificationDeliveryPreferencesDayInput!
+  saturday: NotificationDeliveryPreferencesDayInput!
+}
+
+input NotificationDeliveryPreferencesDayInput {
+  start: String
+  end: String
+}
+
+type UserSettingsFlagsResetPayload {
+  lastSyncId: Float!
+  success: Boolean!
+}
+
+enum UserFlagType {
+  updatedSlackThreadSyncIntegration
+  completedOnboarding
+  desktopInstalled
+  teamsPageIntroductionDismissed
+  joinTeamIntroductionDismissed
+  desktopDownloadToastDismissed
+  emptyBacklogDismissed
+  emptyCustomViewsDismissed
+  emptyActiveIssuesDismissed
+  emptyMyIssuesDismissed
+  triageWelcomeDismissed
+  cycleWelcomeDismissed
+  projectWelcomeDismissed
+  projectBacklogWelcomeDismissed
+  projectUpdatesWelcomeDismissed
+  analyticsWelcomeDismissed
+  insightsWelcomeDismissed
+  insightsHelpDismissed
+  figmaPromptDismissed
+  issueMovePromptCompleted
+  migrateThemePreference
+  listSelectionTip
+  emptyParagraphSlashCommandTip
+  editorSlashCommandUsed
+  canPlaySnake
+  canPlayTetris
+  importBannerDismissed
+  tryInvitePeopleDismissed
+  tryRoadmapsDismissed
+  tryCyclesDismissed
+  tryTriageDismissed
+  tryGithubDismissed
+  rewindBannerDismissed
+  helpIslandFeatureInsightsDismissed
+  dueDateShortcutMigration
+  slackCommentReactionTipShown
+  issueLabelSuggestionUsed
+  threadedCommentsNudgeIsSeen
+  desktopTabsOnboardingDismissed
+  milestoneOnboardingIsSeenAndDismissed
+  projectBoardOnboardingIsSeenAndDismissed
+  figmaPluginBannerDismissed
+  initiativesBannerDismissed
+  all
+}
+
+type UserSettingsFlagPayload {
+  lastSyncId: Float!
+  flag: String
+  value: Int
+  success: Boolean!
+}
+
+enum UserFlagUpdateOperation {
+  incr
+  decr
+  clear
+  lock
+}
+
+enum NotificationChannel {
+  desktop
+  mobile
+  email
+  slack
+}
+
+enum NotificationCategory {
+  assignments
+  statusChanges
+  commentsAndReplies
+  mentions
+  reactions
+  subscriptions
+  documentChanges
+  postsAndUpdates
+  reminders
+  reviews
+  appsAndIntegrations
+  triage
+  customers
+  system
+}
+
+type UserPayload {
+  lastSyncId: Float!
+  user: User
+  success: Boolean!
+}
+
+input UserUpdateInput {
+  name: String
+  displayName: String
+  avatarUrl: String
+  active: Boolean
+  disableReason: String
+  admin: Boolean
+  description: String
+  statusEmoji: String
+  statusLabel: String
+  statusUntilAt: DateTime
+  timezone: String
+}
+
+type UserAdminPayload {
+  success: Boolean!
+}
+
+type TriageResponsibilityPayload {
+  lastSyncId: Float!
+  triageResponsibility: TriageResponsibility!
+  success: Boolean!
+}
+
+input TriageResponsibilityCreateInput {
+  id: String
+  teamId: String!
+  action: String!
+  manualSelection: TriageResponsibilityManualSelectionInput
+  timeScheduleId: String
+}
+
+input TriageResponsibilityManualSelectionInput {
+  userIds: [String!]!
+  assignmentIndex: Int
+}
+
+input TriageResponsibilityUpdateInput {
+  action: String
+  manualSelection: TriageResponsibilityManualSelectionInput
+  timeScheduleId: String
+}
+
+type TimeSchedulePayload {
+  lastSyncId: Float!
+  timeSchedule: TimeSchedule!
+  success: Boolean!
+}
+
+input TimeScheduleCreateInput {
+  id: String
+  name: String!
+  entries: [TimeScheduleEntryInput!]!
+  externalId: String
+  externalUrl: String
+}
+
+input TimeScheduleEntryInput {
+  startsAt: DateTime!
+  endsAt: DateTime!
+  userId: String
+  userEmail: String
+}
+
+input TimeScheduleUpdateInput {
+  name: String
+  entries: [TimeScheduleEntryInput!]
+  externalId: String
+  externalUrl: String
+}
+
+type TemplatePayload {
+  lastSyncId: Float!
+  template: Template!
+  success: Boolean!
+}
+
+input TemplateCreateInput {
+  id: String
+  type: String!
+  teamId: String
+  name: String!
+  description: String
+  templateData: JSON!
+  sortOrder: Float
+}
+
+input TemplateUpdateInput {
+  name: String
+  description: String
+  teamId: String
+  templateData: JSON
+  sortOrder: Float
+}
+
+type TeamPayload {
+  lastSyncId: Float!
+  team: Team
+  success: Boolean!
+}
+
+input TeamCreateInput {
+  id: String
+  name: String!
+  description: String
+  key: String
+  icon: String
+  color: String
+  cyclesEnabled: Boolean
+  cycleStartDay: Float
+  cycleDuration: Int
+  cycleCooldownTime: Int
+  cycleIssueAutoAssignStarted: Boolean
+  cycleIssueAutoAssignCompleted: Boolean
+  cycleLockToActive: Boolean
+  upcomingCycleCount: Float
+  triageEnabled: Boolean
+  requirePriorityToLeaveTriage: Boolean
+  timezone: String
+  inheritIssueEstimation: Boolean
+  issueEstimationType: String
+  issueEstimationAllowZero: Boolean
+  setIssueSortOrderOnStateChange: String
+  issueEstimationExtended: Boolean
+  defaultIssueEstimate: Float
+  groupIssueHistory: Boolean
+  defaultTemplateForMembersId: String
+  defaultTemplateForNonMembersId: String
+  defaultProjectTemplateId: String
+  private: Boolean
+  autoClosePeriod: Float
+  autoCloseStateId: String
+  autoArchivePeriod: Float
+  markedAsDuplicateWorkflowStateId: String
+  parentId: String
+}
+
+input InheritanceEntityMapping {
+  workflowStates: JSONObject!
+  issueLabels: JSONObject
+}
+
+input TeamUpdateInput {
+  name: String
+  description: String
+  key: String
+  icon: String
+  color: String
+  cyclesEnabled: Boolean
+  cycleStartDay: Float
+  cycleDuration: Int
+  cycleCooldownTime: Int
+  cycleIssueAutoAssignStarted: Boolean
+  cycleIssueAutoAssignCompleted: Boolean
+  cycleLockToActive: Boolean
+  cycleEnabledStartDate: DateTime
+  upcomingCycleCount: Float
+  timezone: String
+  inheritIssueEstimation: Boolean
+  issueEstimationType: String
+  issueEstimationAllowZero: Boolean
+  setIssueSortOrderOnStateChange: String
+  issueEstimationExtended: Boolean
+  defaultIssueEstimate: Float
+  slackNewIssue: Boolean
+  slackIssueComments: Boolean
+  slackIssueStatuses: Boolean
+  groupIssueHistory: Boolean
+  defaultTemplateForMembersId: String
+  defaultTemplateForNonMembersId: String
+  defaultProjectTemplateId: String
+  private: Boolean
+  triageEnabled: Boolean
+  requirePriorityToLeaveTriage: Boolean
+  defaultIssueStateId: String
+  autoClosePeriod: Float
+  autoCloseStateId: String
+  autoCloseParentIssues: Boolean
+  autoCloseChildIssues: Boolean
+  autoArchivePeriod: Float
+  markedAsDuplicateWorkflowStateId: String
+  joinByDefault: Boolean
+  scimManaged: Boolean
+  parentId: String
+}
+
+type TeamArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Team
+}
+
+type TeamMembershipPayload {
+  lastSyncId: Float!
+  teamMembership: TeamMembership
+  success: Boolean!
+}
+
+input TeamMembershipCreateInput {
+  id: String
+  userId: String!
+  teamId: String!
+  owner: Boolean
+  sortOrder: Float
+}
+
+input TeamMembershipUpdateInput {
+  owner: Boolean
+  sortOrder: Float
+}
+
+type RoadmapToProjectPayload {
+  lastSyncId: Float!
+  roadmapToProject: RoadmapToProject!
+  success: Boolean!
+}
+
+input RoadmapToProjectCreateInput {
+  id: String
+  projectId: String!
+  roadmapId: String!
+  sortOrder: Float
+}
+
+input RoadmapToProjectUpdateInput {
+  sortOrder: Float
+}
+
+type RoadmapPayload {
+  lastSyncId: Float!
+  roadmap: Roadmap!
+  success: Boolean!
+}
+
+input RoadmapCreateInput {
+  id: String
+  name: String!
+  description: String
+  ownerId: String
+  sortOrder: Float
+  color: String
+}
+
+input RoadmapUpdateInput {
+  name: String
+  description: String
+  ownerId: String
+  sortOrder: Float
+  color: String
+}
+
+type RoadmapArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Roadmap
+}
+
+type CreateCsvExportReportPayload {
+  success: Boolean!
+}
+
+type ReactionPayload {
+  lastSyncId: Float!
+  reaction: Reaction!
+  success: Boolean!
+}
+
+input ReactionCreateInput {
+  id: String
+  emoji: String!
+  commentId: String
+  projectUpdateId: String
+  initiativeUpdateId: String
+  issueId: String
+  postId: String
+  pullRequestId: String
+  pullRequestCommentId: String
+}
+
+type PushSubscriptionPayload {
+  lastSyncId: Float!
+  entity: PushSubscription!
+  success: Boolean!
+}
+
+type PushSubscription implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+}
+
+input PushSubscriptionCreateInput {
+  id: String
+  data: String!
+  type: PushSubscriptionType = web
+}
+
+enum PushSubscriptionType {
+  web
+  apple
+  appleDevelopment
+  firebase
+}
+
+type ProjectUpdatePayload {
+  lastSyncId: Float!
+  projectUpdate: ProjectUpdate!
+  success: Boolean!
+}
+
+input ProjectUpdateCreateInput {
+  id: String
+  body: String
+  bodyData: JSON
+  projectId: String!
+  health: ProjectUpdateHealthType
+  isDiffHidden: Boolean
+}
+
+input ProjectUpdateUpdateInput {
+  body: String
+  bodyData: JSON
+  health: ProjectUpdateHealthType
+  isDiffHidden: Boolean
+}
+
+type ProjectUpdateArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: ProjectUpdate
+}
+
+type ProjectUpdateReminderPayload {
+  lastSyncId: Float!
+  success: Boolean!
+}
+
+type ProjectStatusPayload {
+  lastSyncId: Float!
+  status: ProjectStatus!
+  success: Boolean!
+}
+
+input ProjectStatusCreateInput {
+  id: String
+  name: String!
+  color: String!
+  description: String
+  position: Float!
+  type: ProjectStatusType!
+  indefinite: Boolean = false
+}
+
+input ProjectStatusUpdateInput {
+  name: String
+  color: String
+  description: String
+  position: Float
+  type: ProjectStatusType
+  indefinite: Boolean
+}
+
+type ProjectStatusArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: ProjectStatus
+}
+
+type ProjectPayload {
+  lastSyncId: Float!
+  project: Project
+  success: Boolean!
+}
+
+input ProjectCreateInput {
+  id: String
+  name: String!
+  icon: String
+  color: String
+  statusId: String
+  description: String
+  content: String
+  teamIds: [String!]!
+  convertedFromIssueId: String
+  lastAppliedTemplateId: String
+  leadId: String
+  memberIds: [String!]
+  startDate: TimelessDate
+  startDateResolution: DateResolutionType
+  targetDate: TimelessDate
+  targetDateResolution: DateResolutionType
+  sortOrder: Float
+  prioritySortOrder: Float
+  priority: Int
+}
+
+input ProjectUpdateInput {
+  statusId: String
+  name: String
+  description: String
+  content: String
+  convertedFromIssueId: String
+  lastAppliedTemplateId: String
+  icon: String
+  color: String
+  teamIds: [String!]
+  projectUpdateRemindersPausedUntilAt: DateTime
+  updateReminderFrequencyInWeeks: Float
+  updateReminderFrequency: Float
+  frequencyResolution: FrequencyResolutionType
+  updateRemindersDay: Day
+  updateRemindersHour: Int
+  leadId: String
+  memberIds: [String!]
+  startDate: TimelessDate
+  startDateResolution: DateResolutionType
+  targetDate: TimelessDate
+  targetDateResolution: DateResolutionType
+  completedAt: DateTime
+  canceledAt: DateTime
+  slackNewIssue: Boolean
+  slackIssueComments: Boolean
+  slackIssueStatuses: Boolean
+  sortOrder: Float
+  prioritySortOrder: Float
+  trashed: Boolean
+  priority: Int
+}
+
+type SuccessPayload {
+  lastSyncId: Float!
+  success: Boolean!
+}
+
+type ProjectArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Project
+}
+
+type ProjectRelationPayload {
+  lastSyncId: Float!
+  projectRelation: ProjectRelation!
+  success: Boolean!
+}
+
+input ProjectRelationCreateInput {
+  id: String
+  type: String!
+  projectId: String!
+  projectMilestoneId: String
+  anchorType: String!
+  relatedProjectId: String!
+  relatedProjectMilestoneId: String
+  relatedAnchorType: String!
+}
+
+input ProjectRelationUpdateInput {
+  type: String
+  projectId: String
+  projectMilestoneId: String
+  anchorType: String
+  relatedProjectId: String
+  relatedProjectMilestoneId: String
+  relatedAnchorType: String
+}
+
+type ProjectMilestonePayload {
+  lastSyncId: Float!
+  projectMilestone: ProjectMilestone!
+  success: Boolean!
+}
+
+input ProjectMilestoneCreateInput {
+  id: String
+  name: String!
+  description: String
+  descriptionData: JSONObject
+  targetDate: TimelessDate
+  projectId: String!
+  sortOrder: Float
+}
+
+input ProjectMilestoneUpdateInput {
+  name: String
+  description: String
+  descriptionData: JSONObject
+  targetDate: TimelessDate
+  sortOrder: Float
+  projectId: String
+}
+
+type ProjectMilestoneMovePayload {
+  lastSyncId: Float!
+  projectMilestone: ProjectMilestone!
+  success: Boolean!
+  previousIssueTeamIds: [ProjectMilestoneMoveIssueToTeam!]
+  previousProjectTeamIds: ProjectMilestoneMoveProjectTeams
+}
+
+type ProjectMilestoneMoveIssueToTeam {
+  issueId: String!
+  teamId: String!
+}
+
+type ProjectMilestoneMoveProjectTeams {
+  projectId: String!
+  teamIds: [String!]!
+}
+
+input ProjectMilestoneMoveInput {
+  projectId: String!
+  newIssueTeamId: String
+  addIssueTeamToProject: Boolean
+  undoIssueTeamIds: [ProjectMilestoneMoveIssueToTeamInput!]
+  undoProjectTeamIds: ProjectMilestoneMoveProjectTeamsInput
+}
+
+input ProjectMilestoneMoveIssueToTeamInput {
+  issueId: String!
+  teamId: String!
+}
+
+input ProjectMilestoneMoveProjectTeamsInput {
+  projectId: String!
+  teamIds: [String!]!
+}
+
+type OrganizationPayload {
+  lastSyncId: Float!
+  organization: Organization
+  success: Boolean!
+}
+
+input OrganizationUpdateInput {
+  name: String
+  logoUrl: String
+  urlKey: String
+  gitBranchFormat: String
+  gitLinkbackMessagesEnabled: Boolean
+  gitPublicLinkbackMessagesEnabled: Boolean
+  roadmapEnabled: Boolean
+  projectUpdateReminderFrequencyInWeeks: Float
+  projectUpdateRemindersDay: Day
+  projectUpdateRemindersHour: Float
+  initiativeUpdateReminderFrequencyInWeeks: Float
+  initiativeUpdateRemindersDay: Day
+  initiativeUpdateRemindersHour: Float
+  fiscalYearStartMonth: Float
+  workingDays: [Float!]
+  reducedPersonalInformation: Boolean
+  oauthAppReview: Boolean
+  allowedAuthServices: [String!]
+  slaEnabled: Boolean
+  allowMembersToInvite: Boolean
+  restrictTeamCreationToAdmins: Boolean
+  ipRestrictions: [OrganizationIpRestrictionInput!]
+  themeSettings: JSONObject
+  customersEnabled: Boolean
+  customersConfiguration: JSONObject
+  feedEnabled: Boolean
+  defaultFeedSummarySchedule: FeedSummarySchedule
+}
+
+input OrganizationIpRestrictionInput {
+  range: String!
+  type: String!
+  description: String
+  enabled: Boolean!
+}
+
+type OrganizationDeletePayload {
+  success: Boolean!
+}
+
+input DeleteOrganizationInput {
+  deletionCode: String!
+}
+
+type OrganizationCancelDeletePayload {
+  success: Boolean!
+}
+
+type OrganizationStartTrialPayload {
+  success: Boolean!
+}
+
+input OrganizationStartTrialInput {
+  planType: String!
+}
+
+type OrganizationInvitePayload {
+  lastSyncId: Float!
+  organizationInvite: OrganizationInvite!
+  success: Boolean!
+}
+
+input OrganizationInviteCreateInput {
+  id: String
+  email: String!
+  role: UserRoleType = user
+  teamIds: [String!]
+  metadata: JSONObject
+}
+
+input OrganizationInviteUpdateInput {
+  teamIds: [String!]!
+}
+
+type OrganizationDomainSimplePayload {
+  success: Boolean!
+}
+
+type OrganizationDomainPayload {
+  lastSyncId: Float!
+  organizationDomain: OrganizationDomain!
+  success: Boolean!
+}
+
+type OrganizationDomain implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  name: String!
+  verified: Boolean!
+  verificationEmail: String
+  creator: User
+  authType: OrganizationDomainAuthType!
+  claimed: Boolean
+  disableOrganizationCreation: Boolean
+}
+
+enum OrganizationDomainAuthType {
+  saml
+  general
+}
+
+input OrganizationDomainVerificationInput {
+  organizationDomainId: String!
+  verificationCode: String!
+}
+
+input OrganizationDomainCreateInput {
+  id: String
+  name: String!
+  verificationEmail: String
+  authType: String = "general"
+}
+
+input OrganizationDomainUpdateInput {
+  disableOrganizationCreation: Boolean
+}
+
+type NotificationSubscriptionPayload {
+  lastSyncId: Float!
+  notificationSubscription: NotificationSubscription!
+  success: Boolean!
+}
+
+input NotificationSubscriptionCreateInput {
+  id: String
+  customerId: String
+  customViewId: String
+  cycleId: String
+  initiativeId: String
+  labelId: String
+  projectId: String
+  teamId: String
+  userId: String
+  contextViewType: ContextViewType
+  userContextViewType: UserContextViewType
+  notificationSubscriptionTypes: [String!]
+  active: Boolean
+}
+
+input NotificationSubscriptionUpdateInput {
+  notificationSubscriptionTypes: [String!]
+  active: Boolean
+}
+
+type NotificationPayload {
+  lastSyncId: Float!
+  notification: Notification!
+  success: Boolean!
+}
+
+input NotificationUpdateInput {
+  readAt: DateTime
+  snoozedUntilAt: DateTime
+  projectUpdateId: String
+  initiativeUpdateId: String
+}
+
+type NotificationBatchActionPayload {
+  lastSyncId: Float!
+  notifications: [Notification!]!
+  success: Boolean!
+}
+
+input NotificationEntityInput {
+  issueId: String
+  projectId: String
+  initiativeId: String
+  projectUpdateId: String
+  initiativeUpdateId: String
+  oauthClientApprovalId: String
+  id: String
+}
+
+type NotificationArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Notification
+}
+
+type IssuePayload {
+  lastSyncId: Float!
+  issue: Issue
+  success: Boolean!
+}
+
+input IssueCreateInput {
+  id: String
+  title: String
+  description: String
+  descriptionData: JSON
+  assigneeId: String
+  parentId: String
+  priority: Int
+  estimate: Int
+  subscriberIds: [String!]
+  labelIds: [String!]
+  teamId: String!
+  cycleId: String
+  projectId: String
+  projectMilestoneId: String
+  lastAppliedTemplateId: String
+  stateId: String
+  referenceCommentId: String
+  sourceCommentId: String
+  sourcePullRequestCommentId: String
+  sortOrder: Float
+  prioritySortOrder: Float
+  subIssueSortOrder: Float
+  dueDate: TimelessDate
+  createAsUser: String
+  displayIconUrl: String
+  preserveSortOrderOnCreate: Boolean
+  createdAt: DateTime
+  slaBreachesAt: DateTime
+  templateId: String
+  completedAt: DateTime
+  slaType: SLADayCountType
+}
+
+type IssueBatchPayload {
+  lastSyncId: Float!
+  issues: [Issue!]!
+  success: Boolean!
+}
+
+input IssueBatchCreateInput {
+  issues: [IssueCreateInput!]!
+}
+
+input IssueUpdateInput {
+  title: String
+  description: String
+  descriptionData: JSON
+  assigneeId: String
+  parentId: String
+  priority: Int
+  estimate: Int
+  subscriberIds: [String!]
+  labelIds: [String!]
+  addedLabelIds: [String!]
+  removedLabelIds: [String!]
+  teamId: String
+  cycleId: String
+  projectId: String
+  projectMilestoneId: String
+  lastAppliedTemplateId: String
+  stateId: String
+  sortOrder: Float
+  prioritySortOrder: Float
+  subIssueSortOrder: Float
+  dueDate: TimelessDate
+  trashed: Boolean
+  slaBreachesAt: DateTime
+  snoozedUntilAt: DateTime
+  snoozedById: String
+  slaType: SLADayCountType
+  autoClosedByParentClosing: Boolean
+}
+
+scalar UUID
+
+type IssueArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Issue
+}
+
+type IssueRelationPayload {
+  lastSyncId: Float!
+  issueRelation: IssueRelation!
+  success: Boolean!
+}
+
+input IssueRelationCreateInput {
+  id: String
+  type: IssueRelationType!
+  issueId: String!
+  relatedIssueId: String!
+}
+
+enum IssueRelationType {
+  blocks
+  duplicate
+  related
+  similar
+}
+
+input IssueRelationUpdateInput {
+  type: String
+  issueId: String
+  relatedIssueId: String
+}
+
+type IssueLabelPayload {
+  lastSyncId: Float!
+  issueLabel: IssueLabel!
+  success: Boolean!
+}
+
+input IssueLabelCreateInput {
+  id: String
+  name: String!
+  description: String
+  color: String
+  parentId: String
+  teamId: String
+  isGroup: Boolean
+}
+
+input IssueLabelUpdateInput {
+  name: String
+  description: String
+  parentId: String
+  color: String
+}
+
+type IssueImportPayload {
+  lastSyncId: Float!
+  issueImport: IssueImport
+  success: Boolean!
+}
+
+type IssueImportDeletePayload {
+  lastSyncId: Float!
+  issueImport: IssueImport
+  success: Boolean!
+}
+
+input IssueImportUpdateInput {
+  mapping: JSONObject!
+}
+
+type IntegrationsSettingsPayload {
+  lastSyncId: Float!
+  integrationsSettings: IntegrationsSettings!
+  success: Boolean!
+}
+
+input IntegrationsSettingsCreateInput {
+  slackIssueCreated: Boolean
+  slackIssueAddedToView: Boolean
+  slackIssueNewComment: Boolean
+  slackIssueStatusChangedDone: Boolean
+  slackIssueStatusChangedAll: Boolean
+  slackProjectUpdateCreated: Boolean
+  slackProjectUpdateCreatedToTeam: Boolean
+  slackProjectUpdateCreatedToWorkspace: Boolean
+  slackInitiativeUpdateCreated: Boolean
+  slackIssueAddedToTriage: Boolean
+  slackIssueSlaHighRisk: Boolean
+  slackIssueSlaBreached: Boolean
+  id: String
+  teamId: String
+  projectId: String
+  initiativeId: String
+  customViewId: String
+  contextViewType: ContextViewType
+}
+
+input IntegrationsSettingsUpdateInput {
+  slackIssueCreated: Boolean
+  slackIssueAddedToView: Boolean
+  slackIssueNewComment: Boolean
+  slackIssueStatusChangedDone: Boolean
+  slackIssueStatusChangedAll: Boolean
+  slackProjectUpdateCreated: Boolean
+  slackProjectUpdateCreatedToTeam: Boolean
+  slackProjectUpdateCreatedToWorkspace: Boolean
+  slackInitiativeUpdateCreated: Boolean
+  slackIssueAddedToTriage: Boolean
+  slackIssueSlaHighRisk: Boolean
+  slackIssueSlaBreached: Boolean
+}
+
+type IntegrationTemplatePayload {
+  lastSyncId: Float!
+  integrationTemplate: IntegrationTemplate!
+  success: Boolean!
+}
+
+input IntegrationTemplateCreateInput {
+  id: String
+  integrationId: String!
+  templateId: String!
+  foreignEntityId: String
+}
+
+type IntegrationPayload {
+  lastSyncId: Float!
+  integration: Integration
+  success: Boolean!
+}
+
+input IntegrationUpdateInput {
+  settings: IntegrationSettingsInput
+}
+
+input IntegrationSettingsInput {
+  slack: SlackSettingsInput
+  slackAsks: SlackAsksSettingsInput
+  slackPost: SlackPostSettingsInput
+  slackProjectPost: SlackPostSettingsInput
+  slackInitiativePost: SlackPostSettingsInput
+  slackCustomViewNotifications: SlackPostSettingsInput
+  slackOrgProjectUpdatesPost: SlackPostSettingsInput
+  slackOrgInitiativeUpdatesPost: SlackPostSettingsInput
+  googleSheets: GoogleSheetsSettingsInput
+  gitHub: GitHubSettingsInput
+  gitHubImport: GitHubImportSettingsInput
+  gitHubPersonal: GitHubPersonalSettingsInput
+  gitLab: GitLabSettingsInput
+  sentry: SentrySettingsInput
+  zendesk: ZendeskSettingsInput
+  intercom: IntercomSettingsInput
+  front: FrontSettingsInput
+  jira: JiraSettingsInput
+  notion: NotionSettingsInput
+  opsgenie: OpsgenieInput
+  pagerDuty: PagerDutyInput
+  launchDarkly: LaunchDarklySettingsInput
+  jiraPersonal: JiraPersonalSettingsInput
+}
+
+input SlackSettingsInput {
+  teamName: String
+  teamId: String
+  enterpriseName: String
+  enterpriseId: String
+  shouldUnfurl: Boolean
+  linkOnIssueIdMention: Boolean!
+}
+
+input SlackAsksSettingsInput {
+  teamName: String
+  teamId: String
+  enterpriseName: String
+  enterpriseId: String
+  shouldUnfurl: Boolean
+  slackChannelMapping: [SlackChannelNameMappingInput!]
+  canAdministrate: UserRoleType!
+}
+
+input SlackChannelNameMappingInput {
+  id: String!
+  name: String!
+  isPrivate: Boolean
+  isShared: Boolean
+  botAdded: Boolean
+  teams: [SlackAsksTeamSettingsInput!]!
+  autoCreateOnMessage: Boolean
+  autoCreateOnEmoji: Boolean
+  autoCreateOnBotMention: Boolean
+  autoCreateTemplateId: String
+  postCancellationUpdates: Boolean
+  postCompletionUpdates: Boolean
+  postAcceptedFromTriageUpdates: Boolean
+  aiTitles: Boolean
+}
+
+input SlackAsksTeamSettingsInput {
+  id: String!
+  hasDefaultAsk: Boolean!
+}
+
+input SlackPostSettingsInput {
+  channel: String!
+  channelId: String!
+  configurationUrl: String!
+  teamId: String
+  channelType: SlackChannelType
+}
+
+enum SlackChannelType {
+  DirectMessage
+  MultiPersonDirectMessage
+  Private
+  Public
+}
+
+input GoogleSheetsSettingsInput {
+  spreadsheetId: String!
+  spreadsheetUrl: String!
+  sheetId: Float!
+  updatedIssuesAt: DateTime
+}
+
+input GitHubSettingsInput {
+  pullRequestReviewTool: PullRequestReviewTool
+  orgAvatarUrl: String
+  orgLogin: String!
+  repositories: [GitHubRepoInput!]
+  repositoriesMapping: [GitHubRepoMappingInput!]
+  orgType: GithubOrgType
+}
+
+enum PullRequestReviewTool {
+  source
+  graphite
+}
+
+input GitHubRepoInput {
+  id: Float!
+  fullName: String!
+  archived: Boolean
+}
+
+input GitHubRepoMappingInput {
+  id: String!
+  linearTeamId: String!
+  gitHubRepoId: Float!
+  gitHubLabels: [String!]
+  bidirectional: Boolean
+  default: Boolean
+}
+
+enum GithubOrgType {
+  user
+  organization
+}
+
+input GitHubImportSettingsInput {
+  orgLogin: String!
+  orgAvatarUrl: String!
+  repositories: [GitHubRepoInput!]!
+  labels: JSONObject
+  orgType: GithubOrgType!
+}
+
+input GitHubPersonalSettingsInput {
+  login: String!
+}
+
+input GitLabSettingsInput {
+  url: String
+  readonly: Boolean
+  expiresAt: String
+}
+
+input SentrySettingsInput {
+  organizationSlug: String!
+  organizationId: ID!
+  resolvingCompletesIssues: Boolean!
+  unresolvingReopensIssues: Boolean!
+}
+
+input ZendeskSettingsInput {
+  sendNoteOnStatusChange: Boolean
+  sendNoteOnComment: Boolean
+  automateTicketReopeningOnCompletion: Boolean
+  automateTicketReopeningOnCancellation: Boolean
+  automateTicketReopeningOnComment: Boolean
+  subdomain: String!
+  url: String!
+  botUserId: String
+  canReadCustomers: Boolean
+}
+
+input IntercomSettingsInput {
+  sendNoteOnStatusChange: Boolean
+  sendNoteOnComment: Boolean
+  automateTicketReopeningOnCompletion: Boolean
+  automateTicketReopeningOnCancellation: Boolean
+  automateTicketReopeningOnComment: Boolean
+}
+
+input FrontSettingsInput {
+  sendNoteOnStatusChange: Boolean
+  sendNoteOnComment: Boolean
+  automateTicketReopeningOnCompletion: Boolean
+  automateTicketReopeningOnCancellation: Boolean
+  automateTicketReopeningOnComment: Boolean
+}
+
+input JiraSettingsInput {
+  projectMapping: [JiraLinearMappingInput!]
+  projects: [JiraProjectDataInput!]!
+  isJiraServer: Boolean = false
+  setupPending: Boolean
+  manualSetup: Boolean
+}
+
+input JiraLinearMappingInput {
+  jiraProjectId: String!
+  linearTeamId: String!
+  bidirectional: Boolean
+  default: Boolean
+}
+
+input JiraProjectDataInput {
+  id: String!
+  key: String!
+  name: String!
+}
+
+input NotionSettingsInput {
+  workspaceId: String!
+  workspaceName: String!
+}
+
+input OpsgenieInput {
+  apiFailedWithUnauthorizedErrorAt: DateTime
+}
+
+input PagerDutyInput {
+  apiFailedWithUnauthorizedErrorAt: DateTime
+}
+
+input LaunchDarklySettingsInput {
+  projectKey: String!
+  environment: String!
+}
+
+input JiraPersonalSettingsInput {
+  siteName: String
+}
+
+type GitHubCommitIntegrationPayload {
+  lastSyncId: Float!
+  integration: Integration
+  success: Boolean!
+  webhookSecret: String!
+}
+
+type GitHubEnterpriseServerPayload {
+  lastSyncId: Float!
+  integration: Integration
+  success: Boolean!
+  setupUrl: String!
+  installUrl: String!
+  webhookSecret: String!
+}
+
+type GitLabIntegrationCreatePayload {
+  lastSyncId: Float!
+  integration: Integration
+  success: Boolean!
+  webhookSecret: String!
+}
+
+input AirbyteConfigurationInput {
+  apiKey: String!
+}
+
+input JiraConfigurationInput {
+  accessToken: String!
+  email: String!
+  hostname: String!
+  manualSetup: Boolean
+}
+
+input JiraUpdateInput {
+  id: String!
+  updateProjects: Boolean
+  updateMetadata: Boolean
+  deleteWebhook: Boolean
+  webhookSecret: String
+}
+
+type AsksChannelConnectPayload {
+  lastSyncId: Float!
+  integration: Integration
+  success: Boolean!
+  mapping: SlackChannelNameMapping!
+  addBot: Boolean!
+}
+
+type SlackChannelNameMapping {
+  id: String!
+  name: String!
+  isPrivate: Boolean
+  isShared: Boolean
+  botAdded: Boolean
+  teams: [SlackAsksTeamSettings!]!
+  autoCreateOnMessage: Boolean
+  autoCreateOnEmoji: Boolean
+  autoCreateOnBotMention: Boolean
+  autoCreateTemplateId: String
+  postCancellationUpdates: Boolean
+  postCompletionUpdates: Boolean
+  postAcceptedFromTriageUpdates: Boolean
+  aiTitles: Boolean
+}
+
+type SlackAsksTeamSettings {
+  id: String!
+  hasDefaultAsk: Boolean!
+}
+
+type SlackChannelConnectPayload {
+  lastSyncId: Float!
+  integration: Integration
+  success: Boolean!
+  addBot: Boolean!
+  nudgeToConnectMainSlackIntegration: Boolean
+  nudgeToUpdateMainSlackIntegration: Boolean
+}
+
+type IntegrationRequestPayload {
+  success: Boolean!
+}
+
+input IntegrationRequestInput {
+  email: String
+  name: String!
+}
+
+type InitiativeUpdatePayload {
+  lastSyncId: Float!
+  initiativeUpdate: InitiativeUpdate!
+  success: Boolean!
+}
+
+input InitiativeUpdateCreateInput {
+  id: String
+  body: String
+  bodyData: JSON
+  health: InitiativeUpdateHealthType
+  initiativeId: String!
+  isDiffHidden: Boolean
+}
+
+input InitiativeUpdateUpdateInput {
+  body: String
+  bodyData: JSON
+  health: InitiativeUpdateHealthType
+  isDiffHidden: Boolean
+}
+
+type InitiativeUpdateArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: InitiativeUpdate
+}
+
+type InitiativeUpdateReminderPayload {
+  lastSyncId: Float!
+  success: Boolean!
+}
+
+type InitiativeToProjectPayload {
+  lastSyncId: Float!
+  initiativeToProject: InitiativeToProject!
+  success: Boolean!
+}
+
+input InitiativeToProjectCreateInput {
+  id: String
+  projectId: String!
+  initiativeId: String!
+  sortOrder: Float
+}
+
+input InitiativeToProjectUpdateInput {
+  sortOrder: Float
+}
+
+type InitiativePayload {
+  lastSyncId: Float!
+  initiative: Initiative!
+  success: Boolean!
+}
+
+input InitiativeCreateInput {
+  id: String
+  name: String!
+  description: String
+  ownerId: String
+  sortOrder: Float
+  color: String
+  icon: String
+  status: InitiativeStatus
+  targetDate: TimelessDate
+  targetDateResolution: DateResolutionType
+  content: String
+}
+
+input InitiativeUpdateInput {
+  name: String
+  description: String
+  ownerId: String
+  sortOrder: Float
+  color: String
+  icon: String
+  targetDate: TimelessDate
+  status: InitiativeStatus
+  targetDateResolution: DateResolutionType
+  trashed: Boolean
+  content: String
+  updateReminderFrequencyInWeeks: Float
+  updateReminderFrequency: Float
+  frequencyResolution: FrequencyResolutionType
+  updateRemindersDay: Day
+  updateRemindersHour: Int
+}
+
+type InitiativeArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Initiative
+}
+
+type InitiativeRelationPayload {
+  lastSyncId: Float!
+  initiativeRelation: InitiativeRelation!
+  success: Boolean!
+}
+
+input InitiativeRelationCreateInput {
+  id: String
+  initiativeId: String!
+  relatedInitiativeId: String!
+  sortOrder: Float
+}
+
+input InitiativeRelationUpdateInput {
+  sortOrder: Float
+}
+
+type GitAutomationTargetBranchPayload {
+  lastSyncId: Float!
+  targetBranch: GitAutomationTargetBranch!
+  success: Boolean!
+}
+
+input GitAutomationTargetBranchCreateInput {
+  id: String
+  teamId: String!
+  branchPattern: String!
+  isRegex: Boolean = false
+}
+
+input GitAutomationTargetBranchUpdateInput {
+  branchPattern: String
+  isRegex: Boolean
+}
+
+type GitAutomationStatePayload {
+  lastSyncId: Float!
+  gitAutomationState: GitAutomationState!
+  success: Boolean!
+}
+
+input GitAutomationStateCreateInput {
+  id: String
+  teamId: String!
+  stateId: String
+  targetBranchId: String
+  event: GitAutomationStates!
+}
+
+input GitAutomationStateUpdateInput {
+  stateId: String
+  targetBranchId: String
+  event: GitAutomationStates
+}
+
+type UploadPayload {
+  lastSyncId: Float!
+  uploadFile: UploadFile
+  success: Boolean!
+}
+
+type UploadFile {
+  filename: String!
+  contentType: String!
+  size: Int!
+  uploadUrl: String!
+  assetUrl: String!
+  metaData: JSONObject
+  headers: [UploadFileHeader!]!
+}
+
+type UploadFileHeader {
+  key: String!
+  value: String!
+}
+
+type ImageUploadFromUrlPayload {
+  lastSyncId: Float!
+  url: String
+  success: Boolean!
+}
+
+type FavoritePayload {
+  lastSyncId: Float!
+  favorite: Favorite!
+  success: Boolean!
+}
+
+input FavoriteCreateInput {
+  id: String
+  folderName: String
+  parentId: String
+  issueId: String
+  facetId: String
+  projectId: String
+  projectTab: ProjectTab
+  predefinedViewType: String
+  predefinedViewTeamId: String
+  cycleId: String
+  customViewId: String
+  documentId: String
+  roadmapId: String
+  initiativeId: String
+  initiativeTab: InitiativeTab
+  labelId: String
+  userId: String
+  sortOrder: Float
+  customerId: String
+  dashboardId: String
+}
+
+input FavoriteUpdateInput {
+  sortOrder: Float
+  parentId: String
+  folderName: String
+}
+
+type EntityExternalLinkPayload {
+  lastSyncId: Float!
+  entityExternalLink: EntityExternalLink!
+  success: Boolean!
+}
+
+input EntityExternalLinkCreateInput {
+  id: String
+  url: String!
+  label: String!
+  initiativeId: String
+  projectId: String
+  teamId: String
+  resourceFolderId: String
+  sortOrder: Float
+}
+
+input EntityExternalLinkUpdateInput {
+  url: String
+  label: String
+  sortOrder: Float
+  resourceFolderId: String
+}
+
+type EmojiPayload {
+  lastSyncId: Float!
+  emoji: Emoji!
+  success: Boolean!
+}
+
+input EmojiCreateInput {
+  id: String
+  name: String!
+  url: String!
+}
+
+type EmailUnsubscribePayload {
+  success: Boolean!
+}
+
+input EmailUnsubscribeInput {
+  type: String!
+  token: String!
+  userId: String!
+}
+
+type EmailIntakeAddressPayload {
+  lastSyncId: Float!
+  emailIntakeAddress: EmailIntakeAddress!
+  success: Boolean!
+}
+
+type EmailIntakeAddress implements Node {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  archivedAt: DateTime
+  address: String!
+  enabled: Boolean!
+  template: Template
+  team: Team
+  organization: Organization!
+  creator: User
+}
+
+input EmailIntakeAddressCreateInput {
+  id: String
+  teamId: String
+  templateId: String
+}
+
+input EmailIntakeAddressUpdateInput {
+  enabled: Boolean!
+}
+
+type DocumentPayload {
+  lastSyncId: Float!
+  document: Document!
+  success: Boolean!
+}
+
+input DocumentCreateInput {
+  id: String
+  title: String!
+  icon: String
+  color: String
+  content: String
+  projectId: String
+  initiativeId: String
+  teamId: String
+  resourceFolderId: String
+  lastAppliedTemplateId: String
+  sortOrder: Float
+  subscriberIds: [String!]
+}
+
+input DocumentUpdateInput {
+  title: String
+  icon: String
+  color: String
+  content: String
+  projectId: String
+  initiativeId: String
+  teamId: String
+  resourceFolderId: String
+  lastAppliedTemplateId: String
+  hiddenAt: DateTime
+  sortOrder: Float
+  trashed: Boolean
+  subscriberIds: [String!]
+}
+
+type DocumentArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Document
+}
+
+type CyclePayload {
+  lastSyncId: Float!
+  cycle: Cycle
+  success: Boolean!
+}
+
+input CycleCreateInput {
+  id: String
+  name: String
+  description: String
+  teamId: String!
+  startsAt: DateTime!
+  endsAt: DateTime!
+  completedAt: DateTime
+}
+
+input CycleUpdateInput {
+  name: String
+  description: String
+  startsAt: DateTime
+  endsAt: DateTime
+  completedAt: DateTime
+}
+
+type CycleArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: Cycle
+}
+
+input CycleShiftAllInput {
+  id: String!
+  daysToShift: Float!
+}
+
+type CustomerTierPayload {
+  lastSyncId: Float!
+  tier: CustomerTier!
+  success: Boolean!
+}
+
+input CustomerTierCreateInput {
+  id: String
+  name: String
+  color: String!
+  description: String
+  position: Float
+  displayName: String
+}
+
+input CustomerTierUpdateInput {
+  name: String
+  color: String
+  description: String
+  position: Float
+  displayName: String
+}
+
+type CustomerPayload {
+  lastSyncId: Float!
+  customer: Customer!
+  success: Boolean!
+}
+
+input CustomerCreateInput {
+  id: String
+  name: String!
+  domains: [String!] = []
+  externalIds: [String!] = []
+  slackChannelId: String
+  ownerId: String
+  statusId: String
+  revenue: Int
+  size: Int
+  tierId: String
+  logoUrl: String
+}
+
+input CustomerUpdateInput {
+  name: String
+  domains: [String!]
+  externalIds: [String!]
+  slackChannelId: String
+  ownerId: String
+  statusId: String
+  revenue: Int
+  size: Int
+  tierId: String
+  logoUrl: String
+}
+
+input CustomerUpsertInput {
+  id: String
+  name: String
+  domains: [String!]
+  externalId: String
+  slackChannelId: String
+  ownerId: String
+  statusId: String
+  revenue: Int
+  size: Int
+  tierId: String
+  logoUrl: String
+  tierName: String
+}
+
+type CustomerNeedPayload {
+  lastSyncId: Float!
+  need: CustomerNeed!
+  success: Boolean!
+}
+
+input CustomerNeedCreateInput {
+  id: String
+  customerId: String
+  customerExternalId: String
+  issueId: String
+  projectId: String
+  commentId: String
+  attachmentId: String
+  priority: Float
+  body: String
+  bodyData: JSON
+  attachmentUrl: String
+  createAsUser: String
+  displayIconUrl: String
+}
+
+input CustomerNeedCreateFromAttachmentInput {
+  attachmentId: String!
+}
+
+input CustomerNeedUpdateInput {
+  id: String
+  customerId: String
+  customerExternalId: String
+  issueId: String
+  projectId: String
+  priority: Float
+  body: String
+  bodyData: JSON
+  attachmentUrl: String
+}
+
+type CustomerNeedArchivePayload implements ArchivePayload {
+  lastSyncId: Float!
+  success: Boolean!
+  entity: CustomerNeed
+}
+
+type CustomViewPayload {
+  lastSyncId: Float!
+  customView: CustomView!
+  success: Boolean!
+}
+
+input CustomViewCreateInput {
+  id: String
+  name: String!
+  description: String
+  icon: String
+  color: String
+  teamId: String
+  projectId: String
+  initiativeId: String
+  ownerId: String
+  filterData: IssueFilter
+  projectFilterData: ProjectFilter
+  shared: Boolean
+}
+
+input CustomViewUpdateInput {
+  name: String
+  description: String
+  icon: String
+  color: String
+  teamId: String
+  projectId: String
+  initiativeId: String
+  ownerId: String
+  filterData: IssueFilter
+  projectFilterData: ProjectFilter
+  shared: Boolean
+}
+
+type ContactPayload {
+  success: Boolean!
+}
+
+input ContactCreateInput {
+  type: String!
+  message: String!
+  operatingSystem: String
+  browser: String
+  device: String
+  clientVersion: String
+  disappointmentRating: Int
+}
+
+input ContactSalesCreateInput {
+  name: String!
+  email: String!
+  companySize: String
+  message: String
+}
+
+type CommentPayload {
+  lastSyncId: Float!
+  comment: Comment!
+  success: Boolean!
+}
+
+input CommentCreateInput {
+  id: String
+  body: String
+  bodyData: JSON
+  issueId: String
+  projectUpdateId: String
+  initiativeUpdateId: String
+  postId: String
+  documentContentId: String
+  parentId: String
+  createAsUser: String
+  displayIconUrl: String
+  createdAt: DateTime
+  doNotSubscribeToIssue: Boolean
+  createOnSyncedSlackThread: Boolean
+  quotedText: String
+  subscriberIds: [String!]
+}
+
+input CommentUpdateInput {
+  body: String
+  bodyData: JSON
+  resolvingUserId: String
+  resolvingCommentId: String
+  quotedText: String
+  subscriberIds: [String!]
+  doNotSubscribeToIssue: Boolean
+}
+
+type EmailUserAccountAuthChallengeResponse {
+  success: Boolean!
+  authType: String!
+}
+
+input EmailUserAccountAuthChallengeInput {
+  email: String!
+  isDesktop: Boolean
+  clientAuthCode: String
+  inviteLink: String
+  loginCodeOnly: Boolean
+}
+
+input TokenUserAccountAuthInput {
+  email: String!
+  token: String!
+  timezone: String!
+  inviteLink: String
+}
+
+input GoogleUserAccountAuthInput {
+  code: String!
+  redirectUri: String
+  timezone: String!
+  inviteLink: String
+  disallowSignup: Boolean
+}
+
+type PasskeyLoginStartResponse {
+  success: Boolean!
+  options: JSONObject!
+}
+
+type CreateOrJoinOrganizationResponse {
+  organization: AuthOrganization!
+  user: AuthUser!
+}
+
+input OnboardingCustomerSurvey {
+  companyRole: String
+  companySize: String
+}
+
+input CreateOrganizationInput {
+  name: String!
+  urlKey: String!
+  domainAccess: Boolean
+  timezone: String
+  utm: String
+}
+
+input JoinOrganizationInput {
+  organizationId: String!
+  inviteLink: String
+}
+
+type LogoutResponse {
+  success: Boolean!
+}
+
+type AttachmentPayload {
+  lastSyncId: Float!
+  attachment: Attachment!
+  success: Boolean!
+}
+
+input AttachmentCreateInput {
+  id: String
+  title: String!
+  subtitle: String
+  url: String!
+  issueId: String!
+  iconUrl: String
+  metadata: JSONObject
+  groupBySource: Boolean
+  commentBody: String
+  commentBodyData: JSONObject
+  createAsUser: String
+}
+
+input AttachmentUpdateInput {
+  title: String!
+  subtitle: String
+  metadata: JSONObject
+  iconUrl: String
+}
+
+enum GitLinkKind {
+  closes
+  contributes
+  links
+}
+
+type FrontAttachmentPayload {
+  lastSyncId: Float!
+  attachment: Attachment!
+  success: Boolean!
+}
+
+type ApiKeyPayload {
+  lastSyncId: Float!
+  apiKey: ApiKey!
+  success: Boolean!
+}
+
+input ApiKeyCreateInput {
+  id: String
+  label: String!
+  key: String!
+  teamIds: [String!]
+  scope: [String!]
+}
+
+input ApiKeyUpdateInput {
+  label: String
+  teamIds: [String!]
+  scope: [String!]
+}
+
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
+
+directive @specifiedBy(url: String!) on SCALAR
+
+directive @oneOf on INPUT_OBJECT
+
