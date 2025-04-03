@@ -25,15 +25,6 @@ jobs:
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
-      - name: Check Go version
-        run: go version
-        
-      - name: Check staticcheck path
-        run: command -v staticcheck || echo "staticcheck not found in PATH"
-        
-      - name: Check GOPATH bin
-        run: echo "$(go env GOPATH)/bin"
-
       - name: staticcheck
         run: $(go env GOPATH)/bin/staticcheck ./...
 
