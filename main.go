@@ -25,13 +25,10 @@ import (
 // Global variables for UI elements
 var (
 	statusItem appkit.StatusItem
-	menu       appkit.Menu
 )
 
 //go:embed assets/icon_template_36.png
 var iconData []byte
-
-var linearAPIKey string
 
 // Define a far future time for sorting items without dates
 var distantFuture = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -57,9 +54,8 @@ func applicationDidFinishLaunching(notification foundation.Notification) {
 	// Get the system status bar
 	statusBar := appkit.StatusBar_SystemStatusBar()
 
-	// Create a new status item
-	statusItem := statusBar.StatusItemWithLength(appkit.VariableStatusItemLength)
-	// statusItem is now global
+	// Create a new status item and assign to the global variable
+	statusItem = statusBar.StatusItemWithLength(appkit.VariableStatusItemLength)
 	objc.Retain(&statusItem) // Explicitly retain the global status item
 
 	// Get the status item's button
@@ -72,58 +68,64 @@ func applicationDidFinishLaunching(notification foundation.Notification) {
 	if len(iconData) == 0 {
 		log.Fatalln("Icon data is empty")
 	}
-	// Try passing raw byte slice directly, despite method name suggesting NSData
 	image := appkit.ImageClass.Alloc().InitWithData(iconData)
 	if image.IsNil() {
 		log.Fatalln("Could not create appkit.Image from icon data")
 	}
-	image.SetTemplate(true)                               // Essential for status bar icons
-	image.SetSize(foundation.Size{Width: 18, Height: 18}) // Set point size
+	image.SetTemplate(true)
+	image.SetSize(foundation.Size{Width: 18, Height: 18})
 
 	// Set the button's image
 	button.SetImage(image)
 
-	// Create the menu
-	menu = appkit.MenuClass.New() // Assign to global menu
-
-	// Add initial "Loading..." item
+	// Create the initial menu with Loading... and Quit
+	initialMenu := appkit.MenuClass.New()
 	loadingItem := appkit.MenuItemClass.New()
-	loadingItem.SetTitle("Loading issues...")
+	loadingItem.SetTitle("Loading...")
 	loadingItem.SetEnabled(false)
-	menu.AddItem(loadingItem)
-
-	// Add separator
-	menu.AddItem(appkit.MenuItemClass.SeparatorItem())
-
-	// Add Quit item
+	initialMenu.AddItem(loadingItem)
+	initialMenu.AddItem(appkit.MenuItemClass.SeparatorItem())
 	quitItem := appkit.MenuItemClass.New()
 	quitItem.SetTitle("Quit Lil")
-	// Use objc.Sel("terminate:") which is the standard selector for quitting
 	quitItem.SetAction(objc.Sel("terminate:"))
-	// Target is the shared application instance to receive the terminate: message
 	quitItem.SetTarget(appkit.Application_SharedApplication())
-	menu.AddItem(quitItem)
+	initialMenu.AddItem(quitItem)
 
-	// Assign the menu to the status item
-	statusItem.SetMenu(menu)
+	// Assign the initial menu to the status item
+	statusItem.SetMenu(initialMenu)
 
-	// Fetch issues in the background
+	// Attempt to load and display cached issues first
+	cachedIssues, err := loadCachedIssues()
+	if err == nil && len(cachedIssues) > 0 {
+		log.Printf("Loaded %d issues from cache.", len(cachedIssues))
+		// Update menu immediately with cached data (will replace the initial menu)
+		updateMenu(cachedIssues)
+	} else {
+		if err != nil && !os.IsNotExist(err) {
+			log.Printf("Warning: Failed to load cached issues: %v", err)
+		}
+		// If no cache, the "Loading..." state persists until fetch completes
+	}
+
+	// Fetch issues in the background (will replace the menu again)
 	go fetchIssuesAndUpdateMenu()
 }
 
 // updateMenu rebuilds the menu based on the provided issues.
+// It now creates a NEW menu and assigns it to the statusItem.
 func updateMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue) {
 	log.Println("Updating menu...")
-	// Clear existing items except the last separator and Quit item
-	items := menu.ItemArray()
-	for i := len(items) - 3; i >= 0; i-- {
-		menu.RemoveItem(items[i])
-	}
+	// Create a new menu instance for this update
+	newMenu := appkit.MenuClass.New()
 
-	if len(issues) == 0 {
+	if issues == nil { // Handle error case from fetch
+		errorItem := appkit.MenuItemClass.Alloc().InitWithTitleActionKeyEquivalent("Error fetching issues", objc.Sel(""), "")
+		errorItem.SetEnabled(false)
+		newMenu.AddItem(errorItem)
+	} else if len(issues) == 0 {
 		noIssuesItem := appkit.MenuItemClass.Alloc().InitWithTitleActionKeyEquivalent("No active assigned issues", objc.Sel(""), "")
 		noIssuesItem.SetEnabled(false)
-		menu.InsertItemAtIndex(noIssuesItem, 0) // Insert at the beginning
+		newMenu.AddItem(noIssuesItem)
 	} else {
 		// Group by project (Re-using the existing logic)
 		projectsMap := make(map[string]*projectSortInfo)
@@ -186,21 +188,16 @@ func updateMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueCo
 			return sortedProjects[i].earliestDate.Before(sortedProjects[j].earliestDate)
 		})
 
-		// Add projects and issues to menu
-		insertIndex := 0 // Keep track of where to insert items
+		// Add projects and issues to the new menu
 		for i, projectInfo := range sortedProjects {
-			// Add separator before each project except the first one
 			if i > 0 {
-				menu.InsertItemAtIndex(appkit.MenuItemClass.SeparatorItem(), insertIndex)
-				insertIndex++
+				newMenu.AddItem(appkit.MenuItemClass.SeparatorItem())
 			}
 
-			// Only add project header if it's a real project
 			if projectInfo.name != noProjectKey {
 				projectHeader := appkit.MenuItemClass.Alloc().InitWithTitleActionKeyEquivalent(projectInfo.name, objc.Sel(""), "")
-				projectHeader.SetEnabled(false) // Make it non-interactive
-				menu.InsertItemAtIndex(projectHeader, insertIndex)
-				insertIndex++
+				projectHeader.SetEnabled(false)
+				newMenu.AddItem(projectHeader)
 			}
 
 			// Sort issues within project
@@ -261,11 +258,22 @@ func updateMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueCo
 				})
 				newItem.SetToolTip(tooltip)
 
-				menu.InsertItemAtIndex(newItem, insertIndex)
-				insertIndex++
+				newMenu.AddItem(newItem)
 			}
 		}
 	}
+
+	// Add separator and Quit item to the new menu
+	newMenu.AddItem(appkit.MenuItemClass.SeparatorItem())
+	quitItem := appkit.MenuItemClass.New()
+	quitItem.SetTitle("Quit Lil")
+	quitItem.SetAction(objc.Sel("terminate:"))
+	quitItem.SetTarget(appkit.Application_SharedApplication())
+	newMenu.AddItem(quitItem)
+
+	// Assign the completely new menu to the status item
+	statusItem.SetMenu(newMenu)
+	log.Println("Menu updated successfully.")
 }
 
 // fetchIssuesAndUpdateMenu fetches issues from Linear and updates the menu.
@@ -275,25 +283,29 @@ func fetchIssuesAndUpdateMenu() {
 	ctx := context.Background()
 	issues, err := linear.FetchAssignedIssues(ctx)
 
+	// Use a separate variable for the issues/error to pass to the main thread
+	var issuesToUpdate []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue
+	var fetchErr error
+
 	if err != nil {
 		log.Printf("Error fetching issues: %v", err)
-		// Update menu on main thread to show error (e.g., by passing nil)
-		dispatch.MainQueue().DispatchAsync(func() {
-			updateMenu(nil)
-		})
-		return // Stop processing after error
-	}
-
-	log.Printf("Successfully fetched %d active issues.", len(issues))
-
-	if err := cacheIssues(issues); err != nil {
-		log.Printf("Error caching issues: %v", err)
-		// Continue anyway, caching is not critical
+		fetchErr = err // Store the error
+	} else {
+		log.Printf("Successfully fetched %d active issues.", len(issues))
+		issuesToUpdate = issues // Store the fetched issues
+		if cacheErr := cacheIssues(issues); cacheErr != nil {
+			log.Printf("Error caching issues: %v", cacheErr)
+			// Continue anyway, caching is not critical
+		}
 	}
 
 	// Update menu on the main thread
 	dispatch.MainQueue().DispatchAsync(func() {
-		updateMenu(issues)
+		if fetchErr != nil {
+			updateMenu(nil) // Pass nil to indicate error
+		} else {
+			updateMenu(issuesToUpdate)
+		}
 	})
 }
 
@@ -350,7 +362,12 @@ func main() {
 		return
 	}
 
-	loadConfig()
+	// Log version info early
+	if version != "" {
+		log.Printf("Lil version %s (built at %s)", version, buildTime)
+	} else {
+		log.Printf("Lil development version")
+	}
 
 	// Setup and run the AppKit application manually
 	app := appkit.Application_SharedApplication()
@@ -361,23 +378,4 @@ func main() {
 	app.SetActivationPolicy(appkit.ApplicationActivationPolicyProhibited)
 	// app.ActivateIgnoringOtherApps(true) // Removed: May interfere with accessory apps
 	app.Run()
-}
-
-// loadConfig fetches the LINEAR_API_KEY from environment variables.
-func loadConfig() {
-	log.Println("Loading configuration...")
-
-	if version != "" {
-		log.Printf("Lil version %s (built at %s)", version, buildTime)
-	}
-
-	key := os.Getenv("LINEAR_API_KEY")
-
-	if key == "" {
-		log.Fatalln("Error: LINEAR_API_KEY environment variable not set.")
-	}
-
-	linearAPIKey = key
-
-	log.Println("Linear API Key loaded successfully.")
 }
