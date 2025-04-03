@@ -29,9 +29,16 @@ var distantFuture = time.Date(9999, 1, 1, 0, 0, 0, 0, time.UTC)
 // CacheFile is where we store issue data between restarts
 const CacheFile = "/tmp/lil_issues_cache.json"
 
-// version and buildTime information - set at build time
+// Version and build information - set at build time
 var version string
 var buildTime string
+
+// Structure to hold project info for sorting
+type projectSortInfo struct {
+	name         string
+	earliestDate time.Time
+	issues       []*schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue
+}
 
 // parseLinearDate parses Linear's date format.
 // Returns distantFuture if parsing fails or input is empty.
@@ -48,13 +55,6 @@ func parseLinearDate(dateStr string) time.Time {
 		}
 	}
 	return t
-}
-
-// Structure to hold project info for sorting
-type projectSortInfo struct {
-	name         string
-	earliestDate time.Time
-	issues       []*schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue
 }
 
 // openURL opens the specified URL in the default browser.
@@ -102,11 +102,9 @@ func main() {
 }
 
 // loadConfig fetches the LINEAR_API_KEY from environment variables.
-// It calls log.Fatalln if the key is not set.
 func loadConfig() {
 	log.Println("Loading configuration...")
 
-	// Log version information
 	if version != "" {
 		log.Printf("Lil version %s (built at %s)", version, buildTime)
 	}
@@ -119,19 +117,17 @@ func loadConfig() {
 	log.Println("Linear API Key loaded successfully.")
 }
 
-// onReady builds the entire menu from scratch each time
+// onReady builds the menu from scratch
 func onReady() {
 	log.Println("Lil systray app starting...")
 	systray.SetTemplateIcon(iconData, iconData)
 	systray.SetTitle("")
 	systray.SetTooltip("Linear Issue Lister")
 
-	// Handle the case when API key is not set
 	if linearAPIKey == "" {
 		errItem := systray.AddMenuItem("Error: Set LINEAR_API_KEY", "API key not configured")
 		errItem.Disable()
 
-		// Always add Quit at the bottom
 		systray.AddSeparator()
 		mQuit := systray.AddMenuItem("Quit", "Quit the application")
 		go func() {
@@ -142,9 +138,7 @@ func onReady() {
 		return
 	}
 
-	// Check if we're restarting with cached data
 	if os.Getenv("LIL_RESTART") == "true" {
-		// Load cached issues and build menu right away
 		log.Println("Restarting with cached data")
 		issues, err := loadCachedIssues()
 		if err != nil {
@@ -154,11 +148,9 @@ func onReady() {
 			buildIssuesMenu(issues)
 		}
 	} else {
-		// First run, show loading indicator and fetch data
 		loadingItem := systray.AddMenuItem("Loading issues...", "Fetching issues from Linear")
 		loadingItem.Disable()
 
-		// Add Quit at the bottom for the loading state
 		systray.AddSeparator()
 		mQuit := systray.AddMenuItem("Quit", "Quit the application")
 		go func() {
@@ -167,7 +159,6 @@ func onReady() {
 			systray.Quit()
 		}()
 
-		// Start the actual fetch in the background
 		go fetchAndBuildMenu()
 	}
 
@@ -179,7 +170,6 @@ func buildErrorMenu(err error) {
 	errItem := systray.AddMenuItem("Error fetching issues", err.Error())
 	errItem.Disable()
 
-	// Always add Quit at the bottom
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("Quit", "Quit the application")
 	go func() {
@@ -289,15 +279,13 @@ func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIs
 				localIssue := *issuePtr // Make a copy to avoid closure issues
 				menuTitle := localIssue.Identifier + ": " + localIssue.Title
 
-				// Create a rich tooltip with multiple lines of information
+				// Create tooltip with issue details
 				tooltipLines := []string{}
 
-				// Project information - only include if the project exists
 				if localIssue.Project.Id != "" {
 					tooltipLines = append(tooltipLines, "Project: "+localIssue.Project.Name)
 				}
 
-				// Due date if available
 				if localIssue.DueDate != "" {
 					dueDate := parseLinearDate(localIssue.DueDate)
 					if !dueDate.Equal(distantFuture) {
@@ -305,9 +293,7 @@ func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIs
 					}
 				}
 
-				// Assignee information if available
 				if localIssue.Assignee.Id != "" {
-					// Prefer display name if available, otherwise use name
 					assigneeName := localIssue.Assignee.Name
 					if localIssue.Assignee.DisplayName != "" {
 						assigneeName = localIssue.Assignee.DisplayName
@@ -315,22 +301,19 @@ func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIs
 					tooltipLines = append(tooltipLines, "Assignee: "+assigneeName)
 				}
 
-				// State/status if available - with better names for readability
 				if localIssue.State.Id != "" {
 					tooltipLines = append(tooltipLines, "Status: "+localIssue.State.Type)
 				}
 
-				// Only create tooltip if we have some lines
 				var tooltip string
 				if len(tooltipLines) > 0 {
 					tooltip = strings.Join(tooltipLines, "\n")
 				} else {
-					tooltip = localIssue.Title // Default to just the title if no other info
+					tooltip = localIssue.Title
 				}
 
 				newItem := systray.AddMenuItem(menuTitle, tooltip)
 
-				// Click handler
 				go func(url, id string) {
 					<-newItem.ClickedCh
 					log.Printf("Clicked issue: %s", id)
@@ -343,7 +326,6 @@ func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIs
 		}
 	}
 
-	// Always add separator and Quit at the bottom
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("Quit", "Quit the application")
 	go func() {
@@ -362,42 +344,32 @@ func fetchAndBuildMenu() {
 
 	if err != nil {
 		log.Printf("Error fetching issues: %v", err)
-		// Cache the error for the restart to handle
 		os.Setenv("LIL_ERROR", err.Error())
 		restartApp()
 		return
 	}
 
-	// Process and group issues by project
 	log.Printf("Successfully fetched %d active issues.", len(issues))
 
-	// Cache the issues for the restart
 	if err := cacheIssues(issues); err != nil {
 		log.Printf("Error caching issues: %v", err)
 	}
 
-	// Restart the app to rebuild the menu
 	restartApp()
 }
 
 // restartApp quits the current process and starts a new one
 func restartApp() {
-	// Start new process
-	// Get the path to the current executable
 	executable, err := os.Executable()
 	if err != nil {
 		log.Printf("Error getting executable path: %v", err)
 		return
 	}
 
-	// Start new process
 	cmd := exec.Command(executable)
-	// Pass along the same environment
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
-	// Set restart flag
 	cmd.Env = append(cmd.Env, "LIL_RESTART=true")
 
 	if err := cmd.Start(); err != nil {
@@ -405,7 +377,6 @@ func restartApp() {
 		return
 	}
 
-	// Exit this process once the new one is started
 	systray.Quit()
 }
 
@@ -413,5 +384,3 @@ func restartApp() {
 func onExit() {
 	log.Println("Lil systray app finished.")
 }
-
-// End of file
