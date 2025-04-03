@@ -1,0 +1,70 @@
+name: Update Homebrew Formula
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-homebrew-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Get release info
+        id: release
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          TARBALL_URL="https://github.com/pzurek/lil/archive/refs/tags/${VERSION}.tar.gz"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tarball_url=${TARBALL_URL}" >> $GITHUB_OUTPUT
+          
+      - name: Download and compute SHA256
+        id: sha
+        run: |
+          curl -sL "${{ steps.release.outputs.tarball_url }}" -o lil.tar.gz
+          SHA256=$(sha256sum lil.tar.gz | awk '{print $1}')
+          echo "sha256=${SHA256}" >> $GITHUB_OUTPUT
+          
+      - name: Update Homebrew formula
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          SHA256="${{ steps.sha.outputs.sha256 }}"
+          TARBALL_URL="${{ steps.release.outputs.tarball_url }}"
+          
+          sed -i "s|url \".*\"|url \"${TARBALL_URL}\"|" formula/lil.rb
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" formula/lil.rb
+          
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add formula/lil.rb
+          git commit -m "Update Homebrew formula to $VERSION"
+          git push
+          
+      - name: Set up Homebrew tap repo
+        if: ${{ github.event.release.prerelease == false }}
+        uses: actions/checkout@v4
+        with:
+          repository: pzurek/homebrew-lil
+          path: homebrew-lil
+          token: ${{ secrets.GH_PAT }}
+          
+      - name: Update Homebrew tap
+        if: ${{ github.event.release.prerelease == false }}
+        run: |
+          mkdir -p homebrew-lil/formula
+          cp formula/lil.rb homebrew-lil/formula/
+          
+          # If this is the first release, copy README as well
+          if [ ! -f homebrew-lil/README.md ]; then
+            cp homebrew-tap/README.md homebrew-lil/README.md
+          fi
+          
+          cd homebrew-lil
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add .
+          git commit -m "Update formula for ${{ steps.release.outputs.version }}"
+          git push 

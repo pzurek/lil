@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -97,6 +99,18 @@ func loadCachedIssues() ([]schema.GetAssignedIssuesViewerUserAssignedIssuesIssue
 }
 
 func main() {
+	versionFlag := flag.Bool("version", false, "Print version information and exit")
+	flag.Parse()
+
+	if *versionFlag {
+		if version == "" {
+			fmt.Println("Lil development version")
+		} else {
+			fmt.Printf("Lil version %s (built at %s)\n", version, buildTime)
+		}
+		return
+	}
+
 	loadConfig()
 	systray.Run(onReady, onExit)
 }
