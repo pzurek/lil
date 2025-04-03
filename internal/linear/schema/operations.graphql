@@ -1,0 +1,31 @@
+# file: internal/linear/schema/operations.graphql
+# This query fetches the ID, identifier (like ENG-123), and title
+# for all issues assigned to the currently authenticated user (viewer).
+query GetAssignedIssues {
+  viewer {
+    assignedIssues(filter: { state: { type: { nin: ["completed", "canceled"] } } }) {
+      nodes {
+        id
+        identifier
+        title
+        url
+        dueDate
+        createdAt
+        project {
+          id
+          name
+          targetDate
+        }
+        state {
+          id
+          type
+        }
+        assignee {
+          id
+          name
+          displayName
+        }
+      }
+    }
+  }
+}
