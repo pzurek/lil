@@ -67,4 +67,4 @@ jobs:
           git config --global user.email "action@github.com"
           git add .
           git commit -m "Update formula for ${{ steps.release.outputs.version }}"
-          git push 
+          git push

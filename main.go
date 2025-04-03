@@ -8,16 +8,24 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"runtime"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/getlantern/systray"
+	"github.com/progrium/darwinkit/dispatch"
+	"github.com/progrium/darwinkit/macos/appkit"
+	"github.com/progrium/darwinkit/macos/foundation"
+	"github.com/progrium/darwinkit/objc"
 
 	"github.com/pzurek/lil/internal/linear"
 	"github.com/pzurek/lil/internal/linear/schema"
+)
+
+// Global variables for UI elements
+var (
+	statusItem appkit.StatusItem
+	menu       appkit.Menu
 )
 
 //go:embed assets/icon_template_36.png
@@ -42,164 +50,82 @@ type projectSortInfo struct {
 	issues       []*schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue
 }
 
-// parseLinearDate parses Linear's date format.
-// Returns distantFuture if parsing fails or input is empty.
-func parseLinearDate(dateStr string) time.Time {
-	if dateStr == "" {
-		return distantFuture
+// ApplicationDidFinishLaunching is called when the app has finished launching.
+func applicationDidFinishLaunching(notification foundation.Notification) {
+	log.Println("Application finished launching. Setting up status bar item...")
+
+	// Get the system status bar
+	statusBar := appkit.StatusBar_SystemStatusBar()
+
+	// Create a new status item
+	statusItem := statusBar.StatusItemWithLength(appkit.VariableStatusItemLength)
+	// statusItem is now global
+	objc.Retain(&statusItem) // Explicitly retain the global status item
+
+	// Get the status item's button
+	button := statusItem.Button()
+	if button.IsNil() {
+		log.Fatalln("Could not get status item button")
 	}
-	t, err := time.Parse(time.RFC3339, dateStr)
-	if err != nil {
-		t, err = time.Parse("2006-01-02", dateStr)
-		if err != nil {
-			log.Printf("Warning: Could not parse date '%s': %v", dateStr, err)
-			return distantFuture
-		}
+
+	// Create NSImage from embedded data
+	if len(iconData) == 0 {
+		log.Fatalln("Icon data is empty")
 	}
-	return t
+	// Try passing raw byte slice directly, despite method name suggesting NSData
+	image := appkit.ImageClass.Alloc().InitWithData(iconData)
+	if image.IsNil() {
+		log.Fatalln("Could not create appkit.Image from icon data")
+	}
+	image.SetTemplate(true)                               // Essential for status bar icons
+	image.SetSize(foundation.Size{Width: 18, Height: 18}) // Set point size
+
+	// Set the button's image
+	button.SetImage(image)
+
+	// Create the menu
+	menu = appkit.MenuClass.New() // Assign to global menu
+
+	// Add initial "Loading..." item
+	loadingItem := appkit.MenuItemClass.New()
+	loadingItem.SetTitle("Loading issues...")
+	loadingItem.SetEnabled(false)
+	menu.AddItem(loadingItem)
+
+	// Add separator
+	menu.AddItem(appkit.MenuItemClass.SeparatorItem())
+
+	// Add Quit item
+	quitItem := appkit.MenuItemClass.New()
+	quitItem.SetTitle("Quit Lil")
+	// Use objc.Sel("terminate:") which is the standard selector for quitting
+	quitItem.SetAction(objc.Sel("terminate:"))
+	// Target is the shared application instance to receive the terminate: message
+	quitItem.SetTarget(appkit.Application_SharedApplication())
+	menu.AddItem(quitItem)
+
+	// Assign the menu to the status item
+	statusItem.SetMenu(menu)
+
+	// Fetch issues in the background
+	go fetchIssuesAndUpdateMenu()
 }
 
-// openURL opens the specified URL in the default browser.
-func openURL(url string) error {
-	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case "darwin":
-		cmd = exec.Command("open", url)
-	case "linux":
-		cmd = exec.Command("xdg-open", url)
-	case "windows":
-		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
-	default:
-		log.Printf("Unsupported platform: %s, cannot open URL", runtime.GOOS)
-		return nil
-	}
-	log.Printf("Opening URL: %s", url)
-	return cmd.Start()
-}
-
-// cacheIssues saves the issues to a cache file for later use when restarting
-func cacheIssues(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue) error {
-	data, err := json.Marshal(issues)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(CacheFile, data, 0644)
-}
-
-// loadCachedIssues loads issues from the cache file
-func loadCachedIssues() ([]schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue, error) {
-	data, err := os.ReadFile(CacheFile)
-	if err != nil {
-		return nil, err
+// updateMenu rebuilds the menu based on the provided issues.
+func updateMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue) {
+	log.Println("Updating menu...")
+	// Clear existing items except the last separator and Quit item
+	items := menu.ItemArray()
+	for i := len(items) - 3; i >= 0; i-- {
+		menu.RemoveItem(items[i])
 	}
 
-	var issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue
-	err = json.Unmarshal(data, &issues)
-	return issues, err
-}
-
-func main() {
-	versionFlag := flag.Bool("version", false, "Print version information and exit")
-	flag.Parse()
-
-	if *versionFlag {
-		if version == "" {
-			fmt.Println("Lil development version")
-		} else {
-			fmt.Printf("Lil version %s (built at %s)\n", version, buildTime)
-		}
-		return
-	}
-
-	loadConfig()
-	systray.Run(onReady, onExit)
-}
-
-// loadConfig fetches the LINEAR_API_KEY from environment variables.
-func loadConfig() {
-	log.Println("Loading configuration...")
-
-	if version != "" {
-		log.Printf("Lil version %s (built at %s)", version, buildTime)
-	}
-
-	key := os.Getenv("LINEAR_API_KEY")
-	if key == "" {
-		log.Fatalln("Error: LINEAR_API_KEY environment variable not set.")
-	}
-	linearAPIKey = key
-	log.Println("Linear API Key loaded successfully.")
-}
-
-// onReady builds the menu from scratch
-func onReady() {
-	log.Println("Lil systray app starting...")
-	systray.SetTemplateIcon(iconData, iconData)
-	systray.SetTitle("")
-	systray.SetTooltip("Linear Issue Lister")
-
-	if linearAPIKey == "" {
-		errItem := systray.AddMenuItem("Error: Set LINEAR_API_KEY", "API key not configured")
-		errItem.Disable()
-
-		systray.AddSeparator()
-		mQuit := systray.AddMenuItem("Quit", "Quit the application")
-		go func() {
-			<-mQuit.ClickedCh
-			log.Println("Quit item clicked")
-			systray.Quit()
-		}()
-		return
-	}
-
-	if os.Getenv("LIL_RESTART") == "true" {
-		log.Println("Restarting with cached data")
-		issues, err := loadCachedIssues()
-		if err != nil {
-			log.Printf("Error loading cached issues: %v", err)
-			buildErrorMenu(err)
-		} else {
-			buildIssuesMenu(issues)
-		}
-	} else {
-		loadingItem := systray.AddMenuItem("Loading issues...", "Fetching issues from Linear")
-		loadingItem.Disable()
-
-		systray.AddSeparator()
-		mQuit := systray.AddMenuItem("Quit", "Quit the application")
-		go func() {
-			<-mQuit.ClickedCh
-			log.Println("Quit item clicked")
-			systray.Quit()
-		}()
-
-		go fetchAndBuildMenu()
-	}
-
-	log.Println("Systray ready.")
-}
-
-// buildErrorMenu creates a menu showing an error
-func buildErrorMenu(err error) {
-	errItem := systray.AddMenuItem("Error fetching issues", err.Error())
-	errItem.Disable()
-
-	systray.AddSeparator()
-	mQuit := systray.AddMenuItem("Quit", "Quit the application")
-	go func() {
-		<-mQuit.ClickedCh
-		log.Println("Quit item clicked")
-		systray.Quit()
-	}()
-}
-
-// buildIssuesMenu builds the menu with the provided issues
-func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue) {
 	if len(issues) == 0 {
-		noIssuesItem := systray.AddMenuItem("No active assigned issues", "No active issues assigned to you")
-		noIssuesItem.Disable()
+		noIssuesItem := appkit.MenuItemClass.Alloc().InitWithTitleActionKeyEquivalent("No active assigned issues", objc.Sel(""), "")
+		noIssuesItem.SetEnabled(false)
+		menu.InsertItemAtIndex(noIssuesItem, 0) // Insert at the beginning
 	} else {
-		// Group by project
+		// Group by project (Re-using the existing logic)
 		projectsMap := make(map[string]*projectSortInfo)
 		noProjectKey := "__no_project__" // Internal key that won't be displayed
 
@@ -252,25 +178,29 @@ func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIs
 		// Sort projects by earliest date
 		sort.Slice(sortedProjects, func(i, j int) bool {
 			if sortedProjects[i].name == noProjectKey {
-				return false
+				return false // No-project group always last
 			}
 			if sortedProjects[j].name == noProjectKey {
-				return true
+				return true // No-project group always last
 			}
 			return sortedProjects[i].earliestDate.Before(sortedProjects[j].earliestDate)
 		})
 
 		// Add projects and issues to menu
+		insertIndex := 0 // Keep track of where to insert items
 		for i, projectInfo := range sortedProjects {
 			// Add separator before each project except the first one
 			if i > 0 {
-				systray.AddSeparator()
+				menu.InsertItemAtIndex(appkit.MenuItemClass.SeparatorItem(), insertIndex)
+				insertIndex++
 			}
 
-			// Only add project header if it's a real project (not the no-project placeholder)
+			// Only add project header if it's a real project
 			if projectInfo.name != noProjectKey {
-				projectHeader := systray.AddMenuItem(projectInfo.name, "")
-				projectHeader.Disable()
+				projectHeader := appkit.MenuItemClass.Alloc().InitWithTitleActionKeyEquivalent(projectInfo.name, objc.Sel(""), "")
+				projectHeader.SetEnabled(false) // Make it non-interactive
+				menu.InsertItemAtIndex(projectHeader, insertIndex)
+				insertIndex++
 			}
 
 			// Sort issues within project
@@ -290,23 +220,20 @@ func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIs
 
 			// Add issue items
 			for _, issuePtr := range projectInfo.issues {
-				localIssue := *issuePtr // Make a copy to avoid closure issues
+				localIssue := *issuePtr // Important: Make a copy for the closure
 				menuTitle := localIssue.Identifier + ": " + localIssue.Title
 
-				// Create tooltip with issue details
+				// Create tooltip
 				tooltipLines := []string{}
-
 				if localIssue.Project.Id != "" {
 					tooltipLines = append(tooltipLines, "Project: "+localIssue.Project.Name)
 				}
-
 				if localIssue.DueDate != "" {
 					dueDate := parseLinearDate(localIssue.DueDate)
 					if !dueDate.Equal(distantFuture) {
 						tooltipLines = append(tooltipLines, "Due: "+dueDate.Format("Jan 2, 2006"))
 					}
 				}
-
 				if localIssue.Assignee.Id != "" {
 					assigneeName := localIssue.Assignee.Name
 					if localIssue.Assignee.DisplayName != "" {
@@ -314,87 +241,143 @@ func buildIssuesMenu(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIs
 					}
 					tooltipLines = append(tooltipLines, "Assignee: "+assigneeName)
 				}
-
 				if localIssue.State.Id != "" {
 					tooltipLines = append(tooltipLines, "Status: "+localIssue.State.Type)
 				}
+				tooltip := strings.Join(tooltipLines, "\n")
 
-				var tooltip string
-				if len(tooltipLines) > 0 {
-					tooltip = strings.Join(tooltipLines, "\n")
-				} else {
-					tooltip = localIssue.Title
-				}
-
-				newItem := systray.AddMenuItem(menuTitle, tooltip)
-
-				go func(url, id string) {
-					<-newItem.ClickedCh
-					log.Printf("Clicked issue: %s", id)
-					err := openURL(url)
-					if err != nil {
-						log.Printf("Error opening URL %s: %v", url, err)
+				// Create menu item with inline action closure
+				newItem := appkit.NewMenuItemWithAction(menuTitle, "", func(sender objc.Object) {
+					log.Printf("Clicked issue: %s", localIssue.Identifier)
+					url := foundation.URLClass.URLWithString(localIssue.Url)
+					if url.IsNil() {
+						log.Printf("Error: Could not create URL from string: %s", localIssue.Url)
+						return
 					}
-				}(localIssue.Url, localIssue.Identifier)
+					ok := appkit.Workspace_SharedWorkspace().OpenURL(url)
+					if !ok {
+						log.Printf("Error: Failed to open URL %s", localIssue.Url)
+					}
+				})
+				newItem.SetToolTip(tooltip)
+
+				menu.InsertItemAtIndex(newItem, insertIndex)
+				insertIndex++
 			}
 		}
 	}
-
-	systray.AddSeparator()
-	mQuit := systray.AddMenuItem("Quit", "Quit the application")
-	go func() {
-		<-mQuit.ClickedCh
-		log.Println("Quit item clicked")
-		systray.Quit()
-	}()
 }
 
-// fetchAndBuildMenu fetches data and rebuilds the menu
-func fetchAndBuildMenu() {
-	log.Println("Fetching issues and rebuilding menu...")
+// fetchIssuesAndUpdateMenu fetches issues from Linear and updates the menu.
+func fetchIssuesAndUpdateMenu() {
+	log.Println("Fetching issues and triggering menu update...")
 
 	ctx := context.Background()
 	issues, err := linear.FetchAssignedIssues(ctx)
 
 	if err != nil {
 		log.Printf("Error fetching issues: %v", err)
-		os.Setenv("LIL_ERROR", err.Error())
-		restartApp()
-		return
+		// Update menu on main thread to show error (e.g., by passing nil)
+		dispatch.MainQueue().DispatchAsync(func() {
+			updateMenu(nil)
+		})
+		return // Stop processing after error
 	}
 
 	log.Printf("Successfully fetched %d active issues.", len(issues))
 
 	if err := cacheIssues(issues); err != nil {
 		log.Printf("Error caching issues: %v", err)
+		// Continue anyway, caching is not critical
 	}
 
-	restartApp()
+	// Update menu on the main thread
+	dispatch.MainQueue().DispatchAsync(func() {
+		updateMenu(issues)
+	})
 }
 
-// restartApp quits the current process and starts a new one
-func restartApp() {
-	executable, err := os.Executable()
+// parseLinearDate parses Linear's date format.
+// Returns distantFuture if parsing fails or input is empty.
+func parseLinearDate(dateStr string) time.Time {
+	if dateStr == "" {
+		return distantFuture
+	}
+	t, err := time.Parse(time.RFC3339, dateStr)
 	if err != nil {
-		log.Printf("Error getting executable path: %v", err)
-		return
+		t, err = time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			log.Printf("Warning: Could not parse date '%s': %v", dateStr, err)
+			return distantFuture
+		}
 	}
-
-	cmd := exec.Command(executable)
-	cmd.Env = os.Environ()
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Env = append(cmd.Env, "LIL_RESTART=true")
-
-	if err := cmd.Start(); err != nil {
-		log.Printf("Error starting new process: %v", err)
-		return
-	}
-
-	systray.Quit()
+	return t
 }
 
-// onExit is called by systray when the application is quitting.
-func onExit() {
-	log.Println("Lil systray app finished.")
+// cacheIssues saves the issues to a cache file for later use when restarting
+func cacheIssues(issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue) error {
+	data, err := json.Marshal(issues)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(CacheFile, data, 0644)
+}
+
+// loadCachedIssues loads issues from the cache file
+func loadCachedIssues() ([]schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue, error) {
+	data, err := os.ReadFile(CacheFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var issues []schema.GetAssignedIssuesViewerUserAssignedIssuesIssueConnectionNodesIssue
+	err = json.Unmarshal(data, &issues)
+	return issues, err
+}
+
+func main() {
+	runtime.LockOSThread()
+
+	versionFlag := flag.Bool("version", false, "Print version information and exit")
+	flag.Parse()
+
+	if *versionFlag {
+		if version == "" {
+			fmt.Println("Lil development version")
+		} else {
+			fmt.Printf("Lil version %s (built at %s)\n", version, buildTime)
+		}
+		return
+	}
+
+	loadConfig()
+
+	// Setup and run the AppKit application manually
+	app := appkit.Application_SharedApplication()
+	delegate := &appkit.ApplicationDelegate{}
+	// Assign the launch handler
+	delegate.SetApplicationDidFinishLaunching(applicationDidFinishLaunching)
+	app.SetDelegate(delegate)
+	app.SetActivationPolicy(appkit.ApplicationActivationPolicyProhibited)
+	// app.ActivateIgnoringOtherApps(true) // Removed: May interfere with accessory apps
+	app.Run()
+}
+
+// loadConfig fetches the LINEAR_API_KEY from environment variables.
+func loadConfig() {
+	log.Println("Loading configuration...")
+
+	if version != "" {
+		log.Printf("Lil version %s (built at %s)", version, buildTime)
+	}
+
+	key := os.Getenv("LINEAR_API_KEY")
+
+	if key == "" {
+		log.Fatalln("Error: LINEAR_API_KEY environment variable not set.")
+	}
+
+	linearAPIKey = key
+
+	log.Println("Linear API Key loaded successfully.")
 }
