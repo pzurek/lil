@@ -413,4 +413,5 @@ func restartApp() {
 func onExit() {
 	log.Println("Lil systray app finished.")
 }
+
 // End of file
